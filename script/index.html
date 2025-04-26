@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>متابعة مشاريع وزارة التخطيط</title>
+    <style>
+        body {
+            background-color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #1565c0;
+            overflow-x: auto;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            padding: 0 10px;
+        }
+
+        .tab {
+            padding: 14px 20px;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            border-left: 1px solid rgba(255,255,255,0.3);
+            transition: background-color 0.3s;
+        }
+
+        .tab:hover {
+            background-color: #0d47a1;
+        }
+
+        .tab.active {
+            background-color: #0b3c91;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        th {
+            background-color: #2e7d32;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f1f8e9;
+        }
+
+        .sheet {
+            display: none;
+        }
+
+        .sheet.active {
+            display: block;
+        }
+
+        h2 {
+            color: #2e7d32;
+        }
+
+        button {
+            margin: 5px;
+            padding: 6px 12px;
+            background-color: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0d47a1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="tabs">
+    <div style="display: flex;">
+        {% for sheet in sheets_data %}
+            <div class="tab" onclick="showSheet({{ loop.index0 }})" id="tab-{{ loop.index0 }}">{{ sheet.name }}</div>
+        {% endfor %}
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="addRow()">➕ إضافة صف</button>
+        <button onclick="saveAllSheets()">💾 حفظ جميع الأوراق</button>
+        <button onclick="colorCells()">🔄 تحديث التلوين</button>
+    </div>
+</div>
+
+<div class="content">
+    {% for sheet in sheets_data %}
+        <div class="sheet" id="sheet-{{ loop.index0 }}">
+            <h2>{{ sheet.name }}</h2>
+            {% if sheet.rows %}
+            <table id="table-{{ loop.index0 }}">
+                <thead>
+                    <tr>
+                        {% for header in sheet.headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in sheet.rows %}
+                        <tr>
+                            {% for cell in row %}
+                                <td contenteditable="true">{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p>لا توجد بيانات لعرضها.</p>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    function showSheet(index) {
+        const tabs = document.querySelectorAll('.tab');
+        const sheets = document.querySelectorAll('.sheet');
+
+        tabs.forEach((tab, i) => {
+            tab.classList.toggle('active', i === index);
+        });
+
+        sheets.forEach((sheet, i) => {
+            sheet.classList.toggle('active', i === index);
+        });
+
+        colorCells();
+    }
+
+    function colorCells() {
+        const targetSheet = Array.from(document.querySelectorAll('.sheet')).find(sheet =>
+            sheet.querySelector('h2')?.textContent.trim() === "متابعة المشاريع وزارة التخطيط"
+        );
+
+        if (!targetSheet) return;
+        const table = targetSheet.querySelector('table');
+        if (!table) return;
+
+        for (let row of table.rows) {
+            const cells = row.cells;
+            if (cells.length < 21) continue;
+
+            for (let i = 8; i <= 20; i++) {
+                const cell = cells[i];
+                if (!cell) continue;
+
+                const text = cell.textContent.trim();
+                const prevCell = cells[i - 1];
+                const prevColor = prevCell?.style.backgroundColor;
+
+                cell.style.backgroundColor = "";
+
+                if (i === 8 && text === "تم الإعلان") {
+                    cell.style.backgroundColor = "#4CAF50";
+                    if (cells[i + 1]) {
+                        cells[i + 1].style.backgroundColor = "#ffffff";
+                    }
+                }
+
+                if (i > 8) {
+                    if (text !== "") {
+                        cell.style.backgroundColor = "#4CAF50";
+                    } else if (prevColor === "rgb(76, 175, 80)" || prevCell?.textContent.trim() !== "") {
+                        cell.style.backgroundColor = "#FFCC80";
+                    } else if (prevColor === "rgb(255, 204, 128)") {
+                        cell.style.backgroundColor = "#E0E0E0";
+                    }
+                }
+            }
+        }
+    }
+
+    function saveAllSheets() {
+        const sheets = document.querySelectorAll('.sheet');
+        sheets.forEach(sheet => {
+            const sheetName = sheet.querySelector('h2')?.textContent.trim();
+            const table = sheet.querySelector('table');
+            const tableId = table.id;
+            saveData(sheetName, tableId);
+        });
+    }
+
+    function saveData(sheetName, tableId) {
+        const table = document.getElementById(tableId);
+        const rows = [];
+
+        for (let i = 1; i < table.rows.length; i++) {
+            const row = table.rows[i];
+            const rowData = [];
+            for (let j = 0; j < row.cells.length; j++) {
+                rowData.push(row.cells[j].innerText.trim());
+            }
+            rows.push(rowData);
+        }
+
+        fetch('/api/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sheet: sheetName, data: rows })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.message) {
+                alert("✅ " + result.message);
+            } else {
+                throw new Error(result.error);
+            }
+        })
+        .catch(error => {
+            alert("❌ خطأ أثناء الحفظ: " + error.message);
+        });
+    }
+
+    function addRow() {
+        const activeSheet = document.querySelector('.sheet.active');
+        if (!activeSheet) return;
+        const table = activeSheet.querySelector('table');
+        if (!table) return;
+
+        const newRow = table.insertRow();
+        const columnCount = table.rows[0].cells.length;
+        for (let i = 0; i < columnCount; i++) {
+            const newCell = newRow.insertCell();
+            newCell.contentEditable = "true";
+            newCell.innerText = "";
+        }
+    }
+
+    window.onload = () => showSheet(0);
+</script>
+
+</body>
+</html>

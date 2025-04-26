@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>تقرير: {{ sheet_name }}</title>
+</head>
+<body>
+    <h1>تقرير: {{ sheet_name }}</h1>
+    <table border="1">
+        {% for row in data %}
+            <tr>
+                {% for cell in row %}
+                    <td>{{ cell }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <a href="/">العودة إلى الصفحة الرئيسية</a>
+</body>
+</html>

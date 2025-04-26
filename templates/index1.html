@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>متابعة مشاريع وزارة التخطيط</title>
+    <style>
+        body {
+            background-color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: flex-start;
+            background-color: #1565c0;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .tab {
+            padding: 14px 20px;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            border-left: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .tab:hover, .tab.active {
+            background-color: #0d47a1;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .sheet {
+            display: none;
+        }
+
+        .sheet.active {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        th {
+            background-color: #2e7d32;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f1f8e9;
+        }
+
+        button {
+            margin: 10px 0;
+            padding: 10px 20px;
+            background-color: #1565c0;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0d47a1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="tabs">
+    {% for sheet in sheets_data %}
+        <div class="tab" onclick="showSheet('{{ loop.index0 }}')">{{ sheet.name }}</div>
+    {% endfor %}
+</div>
+
+<div class="content">
+    <button onclick="saveChanges()">💾 حفظ التعديلات</button>
+
+    {% for sheet in sheets_data %}
+        <div class="sheet" id="sheet{{ loop.index0 }}">
+            <h2>{{ sheet.name }}</h2>
+            <table>
+                <thead>
+                    <tr>
+                        {% for header in sheet.headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in sheet.rows %}
+                        <tr>
+                            {% for cell in row %}
+                                <td contenteditable="true">{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+function showSheet(index) {
+    const sheets = document.querySelectorAll('.sheet');
+    const tabs = document.querySelectorAll('.tab');
+    sheets.forEach((sheet, i) => {
+        sheet.classList.remove('active');
+        tabs[i].classList.remove('active');
+    });
+    document.getElementById('sheet' + index).classList.add('active');
+    tabs[index].classList.add('active');
+}
+document.addEventListener("DOMContentLoaded", function () {
+    showSheet(0);
+});
+
+function saveChanges() {
+    const sheets = document.querySelectorAll('.sheet');
+    const data = {};
+
+    sheets.forEach((sheet, i) => {
+        const sheetName = document.querySelectorAll('.tab')[i].innerText;
+        const rows = [];
+        const trs = sheet.querySelectorAll('tbody tr');
+        trs.forEach(tr => {
+            const row = [];
+            tr.querySelectorAll('td').forEach(td => {
+                row.push(td.innerText.trim());
+            });
+            rows.push(row);
+        });
+        data[sheetName] = [[""]]  // صف الرؤوس نتجاهله
+        data[sheetName].push(...rows);
+    });
+
+    fetch('/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    }).then(response => response.json())
+      .then(result => {
+          if (result.status === 'success') {
+              alert("✅ تم حفظ البيانات بنجاح");
+              location.reload();
+          } else {
+              alert("حدث خطأ: " + result.message);
+          }
+      });
+}
+</script>
+
+</body>
+</html>
