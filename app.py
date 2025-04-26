@@ -2,6 +2,10 @@ from flask import Flask, render_template, request, jsonify
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from datetime import datetime
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+EXCEL_FILE_PATH = os.path.join(BASE_DIR, 'data.xlsx')
 
 app = Flask(__name__)
 
@@ -12,8 +16,6 @@ orange = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid"
 gray = PatternFill(start_color="D3D3D3", end_color="D3D3D3", fill_type="solid")  # رصاصي فاتح
 red = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")    # أحمر
 yellow = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")  # أصفر
-
-EXCEL_FILE_PATH = r'C:\Users\msi\PycharmProjects\PythonProject7\تقدم العمل.xlsx'
 
 # ========== تنسيقات حسب كل ورقة ==========
 
