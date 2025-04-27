@@ -10,13 +10,11 @@ app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXCEL_FILE_PATH = os.path.join(BASE_DIR, 'data.xlsx')
 
-# ألوان
-green_fill = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")
-orange_fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
-yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
-red_fill = PatternFill(start_color="FFCDD2", end_color="FFCDD2", fill_type="solid")
-white_fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
-
+# green_fill = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")  # أخضر فاتح
+# orange_fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")  # برتقالي
+# yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")  # أصفر
+# red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")      # 🔥 أحمر فاقع
+# white_fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")    # أبيض
 @app.route('/')
 def index():
     wb = load_workbook(EXCEL_FILE_PATH, data_only=True)

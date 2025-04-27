@@ -259,42 +259,64 @@ function applyInstantColor(cell) {
     const headerCells = Array.from(table.querySelectorAll('thead th'));
     const columnTitle = headerCells[cellIndex]?.textContent.trim() || '';
 
-    // مشاريع وزارة التخطيط
-    if (sheetName.includes('متابعة المشاريع وزارة التخطيط')) {
-        if (value === 'تم الإعلان') {
-            cell.style.backgroundColor = '#c8e6c9';
-            if (row.children[cellIndex + 1]) row.children[cellIndex + 1].style.backgroundColor = '#ffffff';
-        } else if (value === 'تم') {
-            cell.style.backgroundColor = '#c8e6c9';
-            const next = row.children[cellIndex + 1];
-            if (next) {
-                const nextValue = next.innerText.trim();
-                if (!nextValue) {
-                    next.style.backgroundColor = '#ffe0b2';
-                } else {
-                    const parts = nextValue.split(/[-\/]/);
-                    let nextDate = new Date(parts[0], parts[1] - 1, parts[2]);
-                    if (nextDate < today) {
-                        next.style.backgroundColor = '#c8e6c9';
+  // مشاريع وزارة التخطيط
+if (sheetName.includes('متابعة المشاريع وزارة التخطيط')) {
+    if (value.trim() === 'تم الإعلان') {
+        cell.style.backgroundColor = '#2e7d32'; // ✅ أخضر غامق
+        cell.style.color = 'white';
+
+        const next = row.children[cellIndex + 1];
+        if (next) {
+            next.style.backgroundColor = '#ffffff'; // أبيض
+            next.style.color = 'black';
+        }
+    } else if (value.trim() === 'تم') {
+        cell.style.backgroundColor = '#2e7d32'; // ✅ أخضر غامق
+        cell.style.color = 'white';
+
+        const next = row.children[cellIndex + 1];
+        if (next) {
+            const nextValue = next.innerText.trim();
+
+            if (!nextValue) {
+                next.style.backgroundColor = '#ef6c00'; // 🟧 برتقالي غامق
+                next.style.color = 'white';
+            } else {
+                const normalized = nextValue.replace(/-/g, '/').replace(/\s/g, '');
+                const tryDate = new Date(normalized);
+
+                if (!isNaN(tryDate.getTime())) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    tryDate.setHours(0, 0, 0, 0);
+
+                    if (tryDate < today) {
+                        next.style.backgroundColor = '#2e7d32'; // ✅ أخضر غامق
+                        next.style.color = 'white';
                     } else {
-                        next.style.backgroundColor = '#fff59d';
+                        next.style.backgroundColor = '#ffff00'; // أصفر
+                        next.style.color = 'black';
                     }
+                } else {
+                    next.style.backgroundColor = '#ffffff'; // أبيض إذا مو تاريخ
+                    next.style.color = 'black';
                 }
             }
         }
     }
+}
 
-    // نسبة الانحراف في متابعة مشاريع قيد التنفيذ
-    if (sheetName.includes('متابعة مشاريع قيد التنفيذ')) {
-        if (columnTitle.includes('نسبة الانحراف')) {
-            let number = parseFloat(value);
-            if (!isNaN(number)) {
-                if (number < 0) cell.style.backgroundColor = '#ffcdd2';
-                else if (number > 0) cell.style.backgroundColor = '#c8e6c9';
-                else cell.style.backgroundColor = '#ffffff';
-            }
+  // نسبة الانحراف في متابعة مشاريع قيد التنفيذ
+if (sheetName.includes('متابعة مشاريع قيد التنفيذ')) {
+    if (columnTitle.includes('نسبة الانحراف')) {
+        let number = parseFloat(value);
+        if (!isNaN(number)) {
+            if (number < 0) cell.style.backgroundColor = '#b71c1c'; // 🔥 أحمر غامق
+            else if (number > 0) cell.style.backgroundColor = '#2e7d32'; // ✅ أخضر غامق
+            else cell.style.backgroundColor = '#ffffff'; // أبيض
         }
     }
+}
 
     // تاريخ الإنجاز المتوقع في الشيتات المطلوبة
     if (
@@ -521,6 +543,44 @@ document.addEventListener('keydown', function(e) {
         saveChanges();
     }
 });
+
+function loadChart() {
+    fetch('/chart-data')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('projectsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'نسبة الإنجاز (%)',
+                        data: data.values,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('خطأ بتحميل بيانات المخطط:', error));
+}
+
+window.onload = function() {
+    showSheet(0);
+    loadChart();
+};
+
 </script>
 
 </body>
