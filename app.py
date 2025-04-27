@@ -1,187 +1,129 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from datetime import datetime
+from openpyxl.cell.cell import MergedCell
+
 import os
 
+app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXCEL_FILE_PATH = os.path.join(BASE_DIR, 'data.xlsx')
 
-app = Flask(__name__)
+# ألوان
+green_fill = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")
+orange_fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
+yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+red_fill = PatternFill(start_color="FFCDD2", end_color="FFCDD2", fill_type="solid")
+white_fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
 
-# ألوان التنسيقات
-green = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")  # أخضر
-white = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")  # أبيض
-orange = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")  # برتقالي فاتح
-gray = PatternFill(start_color="D3D3D3", end_color="D3D3D3", fill_type="solid")  # رصاصي فاتح
-red = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")    # أحمر
-yellow = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")  # أصفر
-
-# ========== تنسيقات حسب كل ورقة ==========
-
-def style_planning_projects(sheet, row):
-    cell_i = sheet[f"I{row}"]
-    if cell_i.value and "تم الاعلان" in str(cell_i.value).strip():
-        cell_i.fill = green
-        sheet[f"H{row}"].fill = white
-
-    prev_fill = None
-    for col in "JKLMNOPQRSTU":
-        cell = sheet[f"{col}{row}"]
-        if cell.value:
-            if not prev_fill:
-                cell.fill = green
-                prev_fill = "green"
-            elif prev_fill == "green":
-                cell.fill = orange
-                prev_fill = "orange"
-            elif prev_fill == "orange":
-                cell.fill = gray
-                prev_fill = "gray"
-
-def style_execution_projects(sheet, row):
-    cell_j = sheet[f"J{row}"]
-    try:
-        value = float(cell_j.value)
-        if value < 0:
-            cell_j.fill = red
-        elif value == 0:
-            cell_j.fill = white
-        else:
-            cell_j.fill = green
-    except:
-        pass
-
-def style_change_orders(sheet, row):
-    today = datetime.today()
-    columns = ["I", "K", "M", "P", "Q", "R", "U"]
-    for col in columns:
-        try:
-            current = sheet[f"{col}{row}"]
-            previous = sheet[f"{chr(ord(col) - 1)}{row}"]
-            next_cell = sheet[f"{chr(ord(col) + 1)}{row}"]
-
-            current_date = datetime.strptime(str(current.value).strip(), "%Y-%m-%d")
-            prev_date = datetime.strptime(str(previous.value).strip(), "%Y-%m-%d")
-
-            if next_cell.value:
-                current.fill = green
-            elif current_date > prev_date:
-                current.fill = yellow
-            elif current_date < today:
-                current.fill = red
-        except:
-            pass
-
-def style_extensions(sheet, row):
-    today = datetime.today()
-    for col in ["G", "J"]:
-        try:
-            current = sheet[f"{col}{row}"]
-            previous = sheet[f"{chr(ord(col) - 1)}{row}"]
-            next_cell = sheet[f"{chr(ord(col) + 1)}{row}"]
-
-            current_date = datetime.strptime(str(current.value).strip(), "%Y-%m-%d")
-            prev_date = datetime.strptime(str(previous.value).strip(), "%Y-%m-%d")
-
-            if next_cell.value:
-                current.fill = green
-            elif current_date > prev_date:
-                current.fill = yellow
-            elif current_date < today:
-                current.fill = red
-        except:
-            pass
-
-def style_stops(sheet, row):
-    today = datetime.today()
-    col = "G"
-    try:
-        current = sheet[f"{col}{row}"]
-        previous = sheet[f"{chr(ord(col) - 1)}{row}"]
-        next_cell = sheet[f"{chr(ord(col) + 1)}{row}"]
-
-        current_date = datetime.strptime(str(current.value).strip(), "%Y-%m-%d")
-        prev_date = datetime.strptime(str(previous.value).strip(), "%Y-%m-%d")
-
-        if next_cell.value:
-            current.fill = green
-        elif current_date > prev_date:
-            current.fill = yellow
-        elif current_date < today:
-            current.fill = red
-    except:
-        pass
-
-# تنسيق شامل بناءً على اسم الورقة
-def apply_styles(sheet, row):
-    title = sheet.title.strip()
-
-    if title == "متابعة المشاريع وزارة التخطيط":
-        style_planning_projects(sheet, row)
-    elif title == "متابعة مشاريع قيد التنفيذ":
-        style_execution_projects(sheet, row)
-    elif title == "متابعة أوامر غيار 2025":
-        style_change_orders(sheet, row)
-    elif title == "متابعة المدد الاضافية":
-        style_extensions(sheet, row)
-    elif title == "متابعة التوقفات":
-        style_stops(sheet, row)
-
-# ========== عرض الواجهة الرئيسية ==========
 @app.route('/')
 def index():
-    wb = load_workbook(EXCEL_FILE_PATH)
+    wb = load_workbook(EXCEL_FILE_PATH, data_only=True)
     sheets_data = []
 
     for sheet in wb.sheetnames:
-        worksheet = wb[sheet]
-        headers = [cell.value for cell in worksheet[1]]
+        ws = wb[sheet]
+        headers = [cell.value if cell.value else '' for cell in ws[1]]
         rows = []
-
-        for row in worksheet.iter_rows(min_row=2):
-            row_data = []
-            for cell in row:
-                cell_value = cell.value
-                bg_color = None
-                if cell.fill and cell.fill.fill_type == 'solid' and cell.fill.start_color:
-                    start_color = cell.fill.start_color
-                    rgb = getattr(start_color, 'rgb', None)
-                    if rgb and isinstance(rgb, str) and len(rgb) == 8:
-                        bg_color = rgb[2:]  # حذف alpha (أول خانتين)
-                row_data.append({'value': cell_value, 'color': bg_color})
-            rows.append(row_data)
-
-        sheets_data.append({
-            "name": sheet,
-            "headers": headers,
-            "rows": rows
-        })
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            formatted_row = [{'value': str(cell) if cell is not None else ''} for cell in row]
+            rows.append(formatted_row)
+        sheets_data.append({'name': sheet, 'headers': headers, 'rows': rows})
 
     return render_template('index.html', sheets_data=sheets_data)
 
-# ========== حفظ التعديلات ==========
+def apply_styles(sheet, row_idx):
+    title = sheet.title.strip()
+    headers = [cell.value for cell in sheet[1]]
+
+    if title == "متابعة المشاريع وزارة التخطيط":
+        for cell in sheet[row_idx]:
+            value = str(cell.value).strip() if cell.value else ""
+            if value == "تم الإعلان":
+                cell.fill = green_fill
+                if cell.column + 1 <= sheet.max_column:
+                    sheet.cell(row=row_idx, column=cell.column + 1).fill = white_fill
+            elif value == "تم":
+                cell.fill = green_fill
+                next_cell = sheet.cell(row=row_idx, column=cell.column + 1)
+                next_value = str(next_cell.value).strip() if next_cell.value else ""
+                if not next_value:
+                    next_cell.fill = orange_fill
+                else:
+                    try:
+                        date = datetime.strptime(next_value.split()[0], "%Y-%m-%d")
+                        today = datetime.now()
+                        if date.date() < today.date():
+                            next_cell.fill = green_fill
+                        else:
+                            next_cell.fill = yellow_fill
+                    except:
+                        pass
+
+    elif title in ["متابعة مشاريع قيد التنفيذ"]:
+        if "نسبة الانحراف %" in headers:
+            idx = headers.index("نسبة الانحراف %") + 1
+            cell = sheet.cell(row=row_idx, column=idx)
+            try:
+                num = float(cell.value)
+                if num < 0:
+                    cell.fill = red_fill
+                elif num > 0:
+                    cell.fill = green_fill
+                else:
+                    cell.fill = white_fill
+            except:
+                pass
+
+    elif title in ["متابعة التوقفات", "متابعة المدد الاضافية", "تحديث وامر الغيار"]:
+        if "تاريخ الإنجاز المتوقع" in headers:
+            idx = headers.index("تاريخ الإنجاز المتوقع") + 1
+            cell = sheet.cell(row=row_idx, column=idx)
+            prev_cell = sheet.cell(row=row_idx - 1, column=idx) if row_idx > 2 else None
+            try:
+                today = datetime.today().date()
+                current_date = datetime.strptime(str(cell.value).split()[0], "%Y-%m-%d").date()
+                if prev_cell and prev_cell.value:
+                    prev_date = datetime.strptime(str(prev_cell.value).split()[0], "%Y-%m-%d").date()
+                    if current_date > prev_date:
+                        cell.fill = orange_fill
+                if current_date > today:
+                    cell.fill = red_fill
+            except:
+                pass
 @app.route('/save', methods=['POST'])
 def save():
     try:
-        data = request.json
+        data = request.get_json()  # استخدام get_json أو request.json ماكو فرق كبير هنا
+
         wb = load_workbook(EXCEL_FILE_PATH)
 
         for sheet_name, rows in data.items():
+            if sheet_name not in wb.sheetnames:
+                continue  # إذا اسم الشيت مو موجود، تجاهله بدل ما يصير خطأ
+
             sheet = wb[sheet_name]
-            for row_index, row in enumerate(rows[1:], start=2):  # تخطي الرؤوس
+            for row_index, row in enumerate(rows, start=2):
                 for col_index, value in enumerate(row, start=1):
-                    sheet.cell(row=row_index, column=col_index, value=value)
-                # بعد تحديث الصف، نطبق التلوين المناسب
+                    cell = sheet.cell(row=row_index, column=col_index)
+                    if not isinstance(cell, MergedCell):  # ✅ تأكد مو خلية مدموجة
+                        if value in ("None", None):
+                            value = ""
+                        cell.value = value
+                apply_styles(sheet, row_index)
+                # لو عندك تنسيقات أو تلوين للخلايا
                 apply_styles(sheet, row_index)
 
         wb.save(EXCEL_FILE_PATH)
         return jsonify({'status': 'success'})
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error while saving: {e}")  # تطبع الخطأ باللوج للتسهيل
         return jsonify({'status': 'error', 'message': str(e)}), 500
+@app.route('/export')
+def export():
+    return send_file(EXCEL_FILE_PATH, as_attachment=True)
 
-# ========== تشغيل التطبيق ==========
 if __name__ == '__main__':
     app.run(debug=True)

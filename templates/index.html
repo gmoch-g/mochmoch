@@ -1,79 +1,152 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+   <div style="text-align: right; line-height: 1.8; font-family: Arial, sans-serif; font-size: 14px; color: #333; margin: 10px 20px;">
+    <div style="font-weight: bold;">وزارة الإعمار والإسكان والبلديات والأشغال العامة</div>
+    <div style="font-weight: bold;">المديرية العامة للمجاري</div>
+    <div style="margin-top: 8px;">إعداد وتصميم: <span style="font-weight: bold;">ر. مهندسين رغد حميد</span></div>
+</div>
+
+
     <meta charset="UTF-8">
     <title>متابعة المشاريع</title>
-    <style>
-        body { font-family: Arial; background: white; margin: 0; padding: 0; }
-        .tabs { display: flex; background-color: #1565c0; overflow-x: auto; }
-        .tab { padding: 14px; color: white; cursor: pointer; }
-        .tab.active { background-color: #0b3c91; }
-        .content { padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 8px; border: 1px solid #ccc; text-align: center; font-size: 18px; }
-        th { background-color: #2e7d32; color: white; }
-        tr:nth-child(even) { background-color: #f1f8e9; }
-        .sheet { display: none; }
-        .sheet.active { display: block; }
-        .save-button-container {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background-color: #ffffff;
-            padding: 10px;
-            text-align: right;
-            border-bottom: 1px solid #ccc;
-        }
-        .save-button-container button {
-            padding: 12px 24px;
-            background: linear-gradient(to right, #388e3c, #4caf50);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .save-button-container button:hover {
-            background: linear-gradient(to right, #2e7d32, #388e3c);
-        }
-        thead th {
-            position: sticky;
-            top: 0;
-            background-color: #2e7d32;
-            z-index: 2;
-        }
-        .add-row-button {
-            margin-top: 10px;
-            background: #1565c0;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: pointer;
-        }
-        .add-row-button:hover {
-            background: #0b3c91;
-        }
-        .search-input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 10px;
-            font-size: 18px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-    </style>
-    <audio id="save-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3fda1b5d3e.mp3" preload="auto"></audio>
+<style>
+body {
+    font-family: Arial;
+    background: white;
+    margin: 0;
+    padding: 0;
+}
+.content {
+    padding: 20px;
+}
+
+table {
+    width: 200%; /* أو auto حسب حاجتك */
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 8px;
+    border: 1px solid #ccc;
+    text-align: center;
+    font-size: 18px;
+    word-wrap: break-word; /* ✅ التفاف النص داخل الخلايا */
+    max-width: 300px; /* ✅ اختياري تحدد عرض الخلية */
+}
+
+th {
+    background-color: #2e7d32;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f1f8e9;
+}
+
+.sheet {
+    display: none;
+}
+
+.sheet.active {
+    display: block;
+}
+
+.save-button-container {
+    position: sticky;
+    top: 0;
+    background: #f8f9fa;
+    padding: 10px;
+    text-align: right;
+    border-bottom: 1px solid #ccc;
+    z-index: 1000;
+}
+
+thead th {
+    position: sticky;
+    top: 0;
+    background-color: #2e7d32;
+    z-index: 2;
+}
+.buttons-container {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.custom-button {
+    padding: 12px 24px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(135deg, #2196f3, #21cbf3);
+    border: none;
+    border-radius: 50px; /* شكل كبسولة */
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.custom-button:hover {
+    background: linear-gradient(135deg, #1e88e5, #00acc1);
+    transform: translateY(-2px);
+}
+
+.add-row-button {
+    background: linear-gradient(135deg, #4caf50, #81c784); /* لون ثاني لإضافة صف */
+}
+
+.add-row-button:hover {
+    background: linear-gradient(135deg, #388e3c, #66bb6a);
+}
+.search-input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+.tabs {
+    display: flex;
+    background: linear-gradient(to right, #f9d423, #ff4e50); /* تدرج جذاب */
+    padding: 8px;
+    overflow-x: auto;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* ظل خفيف */
+    border-bottom: 3px solid #ff4e50;
+}
+.tab {
+    padding: 12px 24px;
+    margin: 4px;
+    background: white;
+    color: #333;
+    font-weight: bold;
+    font-size: 18px;
+    border-radius: 30px; /* شكل كبسولة */
+    border: 2px solid #ff4e50;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+.tab:hover {
+    background: #ffe0b2;
+    color: #ff4e50;
+}
+.tab.active {
+    background: #ff4e50;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* ظل لما تكون نشطة */
+}
+</style>
 </head>
 <body>
-
-<div class="save-button-container">
-    <button onclick="saveChanges()">💾 حفظ التعديلات</button>
-    <button class="add-row-button" onclick="addRow(this)">➕ إضافة صف</button>
+<div class="buttons-container">
+    <button class="custom-button" onclick="saveChanges()">💾 حفظ التعديلات</button>
+    <button class="custom-button add-row-button" onclick="addRow(this)">➕ إضافة صف</button>
+    <button class="custom-button delete-row-button" onclick="deleteSelectedRow()">🗑️ حذف صف</button>
+    <button class="custom-button export-button" onclick="exportExcel()">📥 تصدير إلى Excel</button>
 </div>
 
 <div class="tabs">
@@ -81,7 +154,6 @@
         <div class="tab" onclick="showSheet('{{ loop.index0 }}')">{{ sheet.name }}</div>
     {% endfor %}
 </div>
-
 <div class="content">
     {% for sheet in sheets_data %}
         <div class="sheet" id="sheet-{{ loop.index0 }}">
@@ -99,510 +171,356 @@
                     {% for row in sheet.rows %}
                         <tr>
                             {% for cell in row %}
-                                <td contenteditable="true" style="background-color: #{{ cell.color }}">{{ cell.value }}</td>
+                                <td contenteditable="true">{{ cell.value }}</td>
                             {% endfor %}
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>متابعة المشاريع</title>
-    <style>
-        body { font-family: Arial; background: white; margin: 0; padding: 0; }
-        .tabs { display: flex; background-color: #1565c0; overflow-x: auto; }
-        .tab { padding: 14px; color: white; cursor: pointer; }
-        .tab.active { background-color: #0b3c91; }
-        .content { padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 8px; border: 1px solid #ccc; text-align: center; font-size: 18px; }
-        th { background-color: #2e7d32; color: white; }
-        tr:nth-child(even) { background-color: #f1f8e9; }
-        .sheet { display: none; }
-        .sheet.active { display: block; }
-        .save-button-container {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background-color: #ffffff;
-            padding: 10px;
-            text-align: right;
-            border-bottom: 1px solid #ccc;
-        }
-        .save-button-container button {
-            padding: 12px 24px;
-            background: linear-gradient(to right, #388e3c, #4caf50);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .save-button-container button:hover {
-            background: linear-gradient(to right, #2e7d32, #388e3c);
-        }
-        thead th {
-            position: sticky;
-            top: 0;
-            background-color: #2e7d32;
-            z-index: 2;
-        }
-        .add-row-button {
-            margin-top: 10px;
-            background: #1565c0;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: pointer;
-        }
-        .add-row-button:hover {
-            background: #0b3c91;
-        }
-        .search-input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 10px;
-            font-size: 18px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-    </style>
-    <audio id="save-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3fda1b5d3e.mp3" preload="auto"></audio>
-</head>
-<body>
-
-<div class="save-button-container">
-    <button onclick="saveChanges()">💾 حفظ التعديلات</button>
-</div>
-
-<div class="tabs">
-    {% for sheet in sheets_data %}
-        <div class="tab" onclick="showSheet('{{ loop.index0 }}')">{{ sheet.name }}</div>
-    {% endfor %}
-</div>
-
-<div class="content">
-    {% for sheet in sheets_data %}
-        <div class="sheet" id="sheet-{{ loop.index0 }}">
-            <h2>{{ sheet.name }}</h2>
-            <input type="text" class="search-input" placeholder="🔍 ابحث هنا..." oninput="filterTable(this)">
-            <table>
-                <thead>
-                    <tr>
-                        {% for head in sheet.headers %}
-                            <th>{{ head }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in sheet.rows %}
-                        <tr>
-                            {% for cell in row %}
-                                <td contenteditable="true" style="background-color: #{{ cell.color }}">{{ cell.value }}</td>
-                            {% endfor %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <button class="add-row-button" onclick="addRow(this)">➕ إضافة صف</button>
         </div>
     {% endfor %}
 </div>
 
 <script>
-    let historyStack = [];
-
-    function showSheet(index) {
-        const tabs = document.querySelectorAll('.tab');
-        const sheets = document.querySelectorAll('.sheet');
-        tabs.forEach(t => t.classList.remove('active'));
-        sheets.forEach(s => s.classList.remove('active'));
-        tabs[index].classList.add('active');
-        sheets[index].classList.add('active');
-    }
-    showSheet(0);
-
-    function saveChanges() {
-        const sound = document.getElementById("save-sound");
-        const sheets = document.querySelectorAll('.sheet');
-        const data = {};
-
-        sheets.forEach(sheet => {
-            const sheetName = sheet.querySelector('h2').textContent;
-            const table = sheet.querySelector('table');
-            const rows = Array.from(table.querySelectorAll('tbody tr')).map(row =>
-                Array.from(row.cells).map(cell => cell.textContent.trim())
-            );
-            data[sheetName] = rows;
-        });
-
-        fetch('/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(res => {
-            if (res.status === 'success') {
-                sound.play();
-                alert('✅ تم حفظ التعديلات بنجاح');
-            } else {
-                alert('❌ حدث خطأ أثناء الحفظ');
-            }
-        })
-        .catch(err => alert('❌ فشل الاتصال بالخادم'));
-    }
-
-    setInterval(saveChanges, 600000); // كل 10 دقائق
-
-    document.addEventListener('keydown', function(e) {
-        const active = document.activeElement;
-
-        if (active.tagName === 'TD' && active.isContentEditable) {
-            const currentCell = active;
-            const currentRow = currentCell.parentElement;
-            const table = currentRow.parentElement;
-            const allRows = Array.from(table.querySelectorAll('tr'));
-            const rowIndex = allRows.indexOf(currentRow);
-            const cells = Array.from(currentRow.querySelectorAll('td'));
-            const cellIndex = cells.indexOf(currentCell);
-
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                saveChanges();
-            }
-
-            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-                e.preventDefault();
-                const lastChange = historyStack.pop();
-                if (lastChange) {
-                    lastChange.cell.innerText = lastChange.oldValue || '';
-                    applyInstantColor(lastChange.cell);
-                }
-            }
-
-            if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                if (cellIndex < cells.length - 1) {
-                    cells[cellIndex + 1].focus();
-                } else if (rowIndex < allRows.length - 1) {
-                    const nextRowCells = Array.from(allRows[rowIndex + 1].querySelectorAll('td'));
-                    nextRowCells[0].focus();
-                }
-            }
-            if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                if (cellIndex > 0) {
-                    cells[cellIndex - 1].focus();
-                } else if (rowIndex > 0) {
-                    const prevRowCells = Array.from(allRows[rowIndex - 1].querySelectorAll('td'));
-                    prevRowCells[prevRowCells.length - 1].focus();
-                }
-            }
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                if (rowIndex < allRows.length - 1) {
-                    const nextRowCells = Array.from(allRows[rowIndex + 1].querySelectorAll('td'));
-                    if (nextRowCells[cellIndex]) {
-                        nextRowCells[cellIndex].focus();
-                    }
-                }
-            }
-            if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                if (rowIndex > 0) {
-                    const prevRowCells = Array.from(allRows[rowIndex - 1].querySelectorAll('td'));
-                    if (prevRowCells[cellIndex]) {
-                        prevRowCells[cellIndex].focus();
-                    }
-                }
-            }
-
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                if (e.shiftKey) {
-                    if (cellIndex > 0) {
-                        cells[cellIndex - 1].focus();
-                    } else if (rowIndex > 0) {
-                        const prevRowCells = Array.from(allRows[rowIndex - 1].querySelectorAll('td'));
-                        prevRowCells[prevRowCells.length - 1].focus();
-                    }
-                } else {
-                    if (cellIndex < cells.length - 1) {
-                        cells[cellIndex + 1].focus();
-                    } else if (rowIndex < allRows.length - 1) {
-                        const nextRowCells = Array.from(allRows[rowIndex + 1].querySelectorAll('td'));
-                        nextRowCells[0].focus();
-                    }
-                }
-            }
-
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                if (e.shiftKey) {
-                    if (rowIndex > 0) {
-                        const upperCell = allRows[rowIndex - 1].querySelectorAll('td')[cellIndex];
-                        if (upperCell) upperCell.focus();
-                    }
-                } else {
-                    if (rowIndex < allRows.length - 1) {
-                        const lowerCell = allRows[rowIndex + 1].querySelectorAll('td')[cellIndex];
-                        if (lowerCell) lowerCell.focus();
-                    }
-                }
+    function cleanDate(cell) {
+    const value = cell.innerText.trim();
+    if (value) {
+        const parts = value.split(/[-\/ :T]/); // يفصل على أساس شرطة أو سلاش أو نقطتين أو حرف T
+        if (parts.length >= 3) {
+            const year = parts[0];
+            const month = parts[1].padStart(2, '0');
+            const day = parts[2].padStart(2, '0');
+            if (year.length === 4 && month.length === 2 && day.length === 2) {
+                cell.innerText = `${year}-${month}-${day}`; // يرجع التاريخ نظيف بدون وقت
             }
         }
+    }
+}
+
+function showSheet(index) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab')[index].classList.add('active');
+    document.querySelectorAll('.sheet')[index].classList.add('active');
+}
+showSheet(0);
+
+function saveChanges() {
+    const sheets = document.querySelectorAll('.sheet');
+    const data = {};
+
+    sheets.forEach(sheet => {
+        const sheetName = sheet.querySelector('h2').textContent;
+        const table = sheet.querySelector('table');
+        const rows = Array.from(table.querySelectorAll('tbody tr')).map(row =>
+            Array.from(row.cells).map(cell => cell.textContent.trim())
+        );
+        data[sheetName] = rows;
     });
 
-    document.addEventListener('input', function(e) {
-        if (e.target.tagName === 'TD' && e.target.isContentEditable) {
-            historyStack.push({ cell: e.target, oldValue: e.target.getAttribute('data-old') || '' });
-            e.target.setAttribute('data-old', e.target.innerText);
-            applyInstantColor(e.target);
-        }
-    });
-
-    function addRow(button) {
-        const sheetDiv = button.parentElement;
-        const table = sheetDiv.querySelector('table tbody');
-        const colCount = sheetDiv.querySelectorAll('thead th').length;
-        const newRow = document.createElement('tr');
-        for (let i = 0; i < colCount; i++) {
-            const newCell = document.createElement('td');
-            newCell.contentEditable = true;
-            newCell.innerText = '';
-            newRow.appendChild(newCell);
-        }
-        table.appendChild(newRow);
-    }
-
-    function applyInstantColor(cell) {
-        const value = cell.innerText.trim();
-        if (value === 'منجز' || value === 'تم') {
-            cell.style.backgroundColor = '#c8e6c9';
-        } else if (value === 'متوقف' || value === 'مؤجل') {
-            cell.style.backgroundColor = '#ffcdd2';
+    fetch('/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.status === 'success') {
+            alert('✅ تم الحفظ بنجاح');
         } else {
-            cell.style.backgroundColor = '#ffffff';
+            alert('❌ حدث خطأ أثناء الحفظ');
         }
-    }
+    })
+    .catch(err => alert('❌ فشل الاتصال بالخادم'));
+function cleanDate(cell) {
+    const value = cell.innerText.trim();
+    if (value) {
+        const parts = value.split(/[-\/ :T]/); // يفصل على أساس شرطة أو سلاش أو نقطتين أو حرف T
+        if (parts.length >= 3) {
+            const year = parts[0];
+            const month = parts[1].padStart(2, '0');
+            const day = parts[2].padStart(2, '0');
+            cell.innerText = `${year}-${month}-${day}`; // يرجع التاريخ نظيف بدون وقت
 
-    function filterTable(input) {
-        const filter = input.value.toLowerCase();
-        const table = input.nextElementSibling;
-        const rows = table.querySelectorAll("tbody tr");
-
-        rows.forEach(row => {
-            const cells = Array.from(row.querySelectorAll("td"));
-            const match = cells.some(cell => cell.textContent.toLowerCase().includes(filter));
-            row.style.display = match ? "" : "none";
-        });
-    }
-</script>
-
-</body>
-</html>
-
-        </div>
-    {% endfor %}
-</div>
-
-<script>
-    let historyStack = [];
-
-    function showSheet(index) {
-        const tabs = document.querySelectorAll('.tab');
-        const sheets = document.querySelectorAll('.sheet');
-        tabs.forEach(t => t.classList.remove('active'));
-        sheets.forEach(s => s.classList.remove('active'));
-        tabs[index].classList.add('active');
-        sheets[index].classList.add('active');
-    }
-    showSheet(0);
-
-    function saveChanges() {
-        const sound = document.getElementById("save-sound");
-        const sheets = document.querySelectorAll('.sheet');
-        const data = {};
-
-        sheets.forEach(sheet => {
-            const sheetName = sheet.querySelector('h2').textContent;
-            const table = sheet.querySelector('table');
-            const rows = Array.from(table.querySelectorAll('tbody tr')).map(row =>
-                Array.from(row.cells).map(cell => cell.textContent.trim())
-            );
-            data[sheetName] = rows;
-        });
-
-        fetch('/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(res => {
-            if (res.status === 'success') {
-                sound.play();
-                alert('✅ تم حفظ التعديلات بنجاح');
-            } else {
-                alert('❌ حدث خطأ أثناء الحفظ');
-            }
-        })
-        .catch(err => alert('❌ فشل الاتصال بالخادم'));
-    }
-
-    setInterval(saveChanges, 600000); // كل 10 دقائق
-
-    document.addEventListener('keydown', function(e) {
-        const active = document.activeElement;
-
-        if (active.tagName === 'TD' && active.isContentEditable) {
-            const currentCell = active;
-            const currentRow = currentCell.parentElement;
-            const table = currentRow.parentElement;
-            const allRows = Array.from(table.querySelectorAll('tr'));
-            const rowIndex = allRows.indexOf(currentRow);
-            const cells = Array.from(currentRow.querySelectorAll('td'));
-            const cellIndex = cells.indexOf(currentCell);
-
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                saveChanges();
-            }
-
-            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-                e.preventDefault();
-                const lastChange = historyStack.pop();
-                if (lastChange) {
-                    lastChange.cell.innerText = lastChange.oldValue || '';
-                    applyInstantColor(lastChange.cell);
-                }
-            }
-
-            if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                if (cellIndex < cells.length - 1) {
-                    cells[cellIndex + 1].focus();
-                } else if (rowIndex < allRows.length - 1) {
-                    const nextRowCells = Array.from(allRows[rowIndex + 1].querySelectorAll('td'));
-                    nextRowCells[0].focus();
-                }
-            }
-            if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                if (cellIndex > 0) {
-                    cells[cellIndex - 1].focus();
-                } else if (rowIndex > 0) {
-                    const prevRowCells = Array.from(allRows[rowIndex - 1].querySelectorAll('td'));
-                    prevRowCells[prevRowCells.length - 1].focus();
-                }
-            }
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                if (rowIndex < allRows.length - 1) {
-                    const nextRowCells = Array.from(allRows[rowIndex + 1].querySelectorAll('td'));
-                    if (nextRowCells[cellIndex]) {
-                        nextRowCells[cellIndex].focus();
-                    }
-                }
-            }
-            if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                if (rowIndex > 0) {
-                    const prevRowCells = Array.from(allRows[rowIndex - 1].querySelectorAll('td'));
-                    if (prevRowCells[cellIndex]) {
-                        prevRowCells[cellIndex].focus();
-                    }
-                }
-            }
-
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                if (e.shiftKey) {
-                    if (cellIndex > 0) {
-                        cells[cellIndex - 1].focus();
-                    } else if (rowIndex > 0) {
-                        const prevRowCells = Array.from(allRows[rowIndex - 1].querySelectorAll('td'));
-                        prevRowCells[prevRowCells.length - 1].focus();
-                    }
-                } else {
-                    if (cellIndex < cells.length - 1) {
-                        cells[cellIndex + 1].focus();
-                    } else if (rowIndex < allRows.length - 1) {
-                        const nextRowCells = Array.from(allRows[rowIndex + 1].querySelectorAll('td'));
-                        nextRowCells[0].focus();
-                    }
-                }
-            }
-
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                if (e.shiftKey) {
-                    if (rowIndex > 0) {
-                        const upperCell = allRows[rowIndex - 1].querySelectorAll('td')[cellIndex];
-                        if (upperCell) upperCell.focus();
-                    }
-                } else {
-                    if (rowIndex < allRows.length - 1) {
-                        const lowerCell = allRows[rowIndex + 1].querySelectorAll('td')[cellIndex];
-                        if (lowerCell) lowerCell.focus();
-                    }
-                }
-            }
         }
-    });
 
-    document.addEventListener('input', function(e) {
-        if (e.target.tagName === 'TD' && e.target.isContentEditable) {
-            historyStack.push({ cell: e.target, oldValue: e.target.getAttribute('data-old') || '' });
-            e.target.setAttribute('data-old', e.target.innerText);
-            applyInstantColor(e.target);
-        }
-    });
-
-    function addRow(button) {
-        const sheetDiv = button.parentElement;
-        const table = sheetDiv.querySelector('table tbody');
-        const colCount = sheetDiv.querySelectorAll('thead th').length;
-        const newRow = document.createElement('tr');
-        for (let i = 0; i < colCount; i++) {
-            const newCell = document.createElement('td');
-            newCell.contentEditable = true;
-            newCell.innerText = '';
-            newRow.appendChild(newCell);
-        }
-        table.appendChild(newRow);
     }
+}
+}
 
-    function applyInstantColor(cell) {
-        const value = cell.innerText.trim();
-        if (value === 'منجز' || value === 'تم') {
+function applyInstantColor(cell) {
+    const value = cell.innerText.trim();
+    const row = cell.parentElement;
+    const table = row.parentElement.parentElement;
+    const sheetName = table.closest('.sheet').querySelector('h2').textContent.trim();
+    const cellIndex = Array.from(row.children).indexOf(cell);
+    const today = new Date();
+
+    const headerCells = Array.from(table.querySelectorAll('thead th'));
+    const columnTitle = headerCells[cellIndex]?.textContent.trim() || '';
+
+    // مشاريع وزارة التخطيط
+    if (sheetName.includes('متابعة المشاريع وزارة التخطيط')) {
+        if (value === 'تم الإعلان') {
             cell.style.backgroundColor = '#c8e6c9';
-        } else if (value === 'متوقف' || value === 'مؤجل') {
-            cell.style.backgroundColor = '#ffcdd2';
-        } else {
-            cell.style.backgroundColor = '#ffffff';
+            if (row.children[cellIndex + 1]) row.children[cellIndex + 1].style.backgroundColor = '#ffffff';
+        } else if (value === 'تم') {
+            cell.style.backgroundColor = '#c8e6c9';
+            const next = row.children[cellIndex + 1];
+            if (next) {
+                const nextValue = next.innerText.trim();
+                if (!nextValue) {
+                    next.style.backgroundColor = '#ffe0b2';
+                } else {
+                    const parts = nextValue.split(/[-\/]/);
+                    let nextDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                    if (nextDate < today) {
+                        next.style.backgroundColor = '#c8e6c9';
+                    } else {
+                        next.style.backgroundColor = '#fff59d';
+                    }
+                }
+            }
         }
     }
 
-    function filterTable(input) {
-        const filter = input.value.toLowerCase();
-        const table = input.nextElementSibling;
-        const rows = table.querySelectorAll("tbody tr");
-
-        rows.forEach(row => {
-            const cells = Array.from(row.querySelectorAll("td"));
-            const match = cells.some(cell => cell.textContent.toLowerCase().includes(filter));
-            row.style.display = match ? "" : "none";
-        });
+    // نسبة الانحراف في متابعة مشاريع قيد التنفيذ
+    if (sheetName.includes('متابعة مشاريع قيد التنفيذ')) {
+        if (columnTitle.includes('نسبة الانحراف')) {
+            let number = parseFloat(value);
+            if (!isNaN(number)) {
+                if (number < 0) cell.style.backgroundColor = '#ffcdd2';
+                else if (number > 0) cell.style.backgroundColor = '#c8e6c9';
+                else cell.style.backgroundColor = '#ffffff';
+            }
+        }
     }
+
+    // تاريخ الإنجاز المتوقع في الشيتات المطلوبة
+    if (
+        (sheetName.includes('متابعة المدد الاضافية') ||
+        sheetName.includes('متابعة التوقفات') ||
+        sheetName.includes('تحديث وامر الغيار')) &&
+        columnTitle.includes('تاريخ الإنجاز المتوقع')
+    ) {
+        const rows = Array.from(row.parentElement.children);
+        const rowIndex = rows.indexOf(row);
+
+        if (rowIndex >= 0) {
+            const prevRow = rows[rowIndex - 1];
+            const prevCell = prevRow?.children[cellIndex];
+            const prevValue = prevCell?.innerText.trim();
+
+            const enteredParts = value.split(/[-\/]/);
+            const prevParts = prevValue ? prevValue.split(/[-\/]/) : null;
+
+            let enteredDate = (enteredParts.length >= 3) ? new Date(enteredParts[0], enteredParts[1] - 1, enteredParts[2]) : null;
+            let prevDate = (prevParts && prevParts.length >= 3) ? new Date(prevParts[0], prevParts[1] - 1, prevParts[2]) : null;
+
+            if (enteredDate instanceof Date && !isNaN(enteredDate)) {
+                cell.style.backgroundColor = '#ffffff'; // افتراضي
+
+                if (prevDate instanceof Date && !isNaN(prevDate)) {
+                    if (enteredDate > prevDate) {
+                        cell.style.backgroundColor = '#ffe0b2'; // برتقالي
+                    }
+                }
+                if (enteredDate > today) {
+                    cell.style.backgroundColor = '#ffcdd2'; // أحمر
+                }
+            }
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('td').forEach(cell => {
+        cleanDate(cell);          // أولا ينظف التاريخ من الوقت
+        applyInstantColor(cell);  // بعدين يلون حسب القيم
+    });
+});
+
+document.addEventListener('input', function(e) {
+    if (e.target.tagName === 'TD') {
+        applyInstantColor(e.target);
+    }
+});
+
+function addRow(button) {
+    const sheet = button.parentElement;
+    const tbody = sheet.querySelector('tbody');
+    const newRow = document.createElement('tr');
+    const columns = sheet.querySelectorAll('thead th').length;
+    for (let i = 0; i < columns; i++) {
+        const td = document.createElement('td');
+        td.contentEditable = "true";
+        newRow.appendChild(td);
+    }
+    tbody.appendChild(newRow);
+}
+
+function filterTable(input) {
+    const filter = input.value.toLowerCase();
+    const table = input.nextElementSibling;
+    const rows = table.querySelectorAll("tbody tr");
+document.addEventListener('input', function(e) {
+    if (e.target.tagName === 'TD') {
+        cleanDate(e.target); // أول شي ينظف التاريخ
+        applyInstantColor(e.target); // بعدين يلون حسب الشروط
+    }
+});
+
+    rows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll("td"));
+        const match = cells.some(cell => cell.textContent.toLowerCase().includes(filter));
+        row.style.display = match ? "" : "none";
+    });
+}
+    document.addEventListener('input', function(e) {
+    if (e.target.tagName === 'TD') {
+        cleanDate(e.target); // أول شي ينظف التاريخ
+        applyInstantColor(e.target); // بعدين يلون حسب الشروط
+    }
+});
+function deleteSelectedRow() {
+    const activeSheet = document.querySelector('.sheet.active');
+    const table = activeSheet.querySelector('table');
+    const selectedRow = table.querySelector('tbody tr.selected');
+
+    if (selectedRow) {
+        selectedRow.remove();
+    } else {
+        alert('⚠️ الرجاء تحديد صف أولاً للحذف');
+    }
+}
+
+// تحديد الصف عند الضغط عليه
+document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'TD') {
+        const row = e.target.parentElement;
+        const table = row.closest('table');
+        table.querySelectorAll('tr').forEach(r => r.classList.remove('selected'));
+        row.classList.add('selected');
+    }
+});
+function exportExcel() {
+    const activeSheet = document.querySelector('.sheet.active');
+    const table = activeSheet.querySelector('table');
+    const sheetName = activeSheet.querySelector('h2').textContent || 'Sheet';
+
+    let html = table.outerHTML;
+    let url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = sheetName + '.xls';
+    a.click();
+}
+
+function addRow(button = null) {
+    const activeSheet = document.querySelector('.sheet.active');
+    const table = activeSheet.querySelector('table');
+    const tbody = table.querySelector('tbody');
+
+    const newRow = document.createElement('tr');
+
+    const columnsCount = table.querySelector('thead tr').children.length;
+    for (let i = 0; i < columnsCount; i++) {
+        const newCell = document.createElement('td');
+        newCell.contentEditable = "true"; // حتى تقدر تكتب مباشر
+        newCell.textContent = ''; // خلية فاضية
+        newRow.appendChild(newCell);
+    }
+
+    // تلوين الصف حسب زوجي أو فردي
+    if (tbody.rows.length % 2 === 0) {
+        newRow.style.backgroundColor = "#f1f8e9"; // لون الصفوف الزوجية
+    } else {
+        newRow.style.backgroundColor = "white"; // الصفوف الفردية
+    }
+
+    tbody.appendChild(newRow);
+
+    // سكرول للصف الجديد
+    newRow.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+// إضافة صف تلقائي عند الضغط Enter بآخر خلية
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        const activeSheet = document.querySelector('.sheet.active');
+        const table = activeSheet.querySelector('table');
+        const lastCell = table.querySelector('tbody tr:last-child td:last-child');
+
+        if (document.activeElement === lastCell) {
+            e.preventDefault(); // نمنع السطر الجديد الافتراضي
+            addRow();
+        }
+    }
+});
+    // تنقل بين الخلايا بالأسهم وTab وEnter
+document.addEventListener('keydown', function(e) {
+    const activeCell = document.activeElement;
+
+    if (activeCell.tagName === 'TD' && activeCell.isContentEditable) {
+        const cell = activeCell;
+        const row = cell.parentElement;
+        const table = row.parentElement.parentElement;
+        let cellIndex = cell.cellIndex;
+        let rowIndex = row.rowIndex;
+
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            const nextCell = row.cells[cellIndex + 1];
+            if (nextCell) nextCell.focus();
+        }
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            const prevCell = row.cells[cellIndex - 1];
+            if (prevCell) prevCell.focus();
+        }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const nextRow = table.rows[rowIndex + 1];
+            if (nextRow && nextRow.cells[cellIndex]) {
+                nextRow.cells[cellIndex].focus();
+            }
+        }
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const prevRow = table.rows[rowIndex - 1];
+            if (prevRow && prevRow.cells[cellIndex]) {
+                prevRow.cells[cellIndex].focus();
+            }
+        }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const nextCell = row.cells[cellIndex + 1];
+            if (nextCell) {
+                nextCell.focus();
+            } else {
+                // لو وصلت آخر خلية بالصف، انتقل لأول خلية بالصف الجديد
+                const nextRow = table.rows[rowIndex + 1];
+                if (nextRow) {
+                    nextRow.cells[0].focus();
+                }
+            }
+        }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const nextRow = table.rows[rowIndex + 1];
+            if (nextRow && nextRow.cells[cellIndex]) {
+                nextRow.cells[cellIndex].focus();
+            }
+        }
+    }
+
+    // حفظ بالضغط على Ctrl + S
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        saveChanges();
+    }
+});
 </script>
 
 </body>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نظام إدارة المشاريع</title>
+    <style>
+        body { font-family: 'Cairo', sans-serif; margin: 20px; background-color: #f7f7f7; }
+        .toolbar { margin-bottom: 20px; text-align: center; }
+        .toolbar button { margin: 0 10px; padding: 10px 20px; font-size: 18px; cursor: pointer; border: none; border-radius: 5px; }
+        .save-btn { background-color: #4CAF50; color: white; }
+        .export-btn { background-color: #2196F3; color: white; }
+        .delete-btn { background-color: #f44336; color: white; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 40px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        tr.selected { background-color: #ffeb3b; }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <button class="save-btn" onclick="saveChanges()">💾 حفظ التعديلات</button>
+    <button class="export-btn" onclick="exportExcel()">📥 تصدير إلى Excel</button>
+    <button class="delete-btn" onclick="deleteRow()">🗑️ حذف الصف المحدد</button>
+</div>
+
+{% for sheet in sheets_data %}
+    <h2>{{ sheet.name }}</h2>
+    <table id="table-{{ loop.index0 }}">
+        <thead>
+            <tr>
+                {% for header in sheet.headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in sheet.rows %}
+            <tr onclick="selectRow(this)">
+                {% for cell in row %}
+                <td style="background-color: {% if cell.color %}#{{ cell.color }}{% else %}white{% endif %};" contenteditable="true">{{ cell.value }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endfor %}
+
+<script>
+let selectedRow = null;
+
+function selectRow(row) {
+    if (selectedRow) selectedRow.classList.remove('selected');
+    selectedRow = row;
+    selectedRow.classList.add('selected');
+}
+
+function saveChanges() {
+    let tables = document.querySelectorAll('table');
+    let data = {};
+    tables.forEach((table, index) => {
+        let sheetName = document.querySelectorAll('h2')[index].innerText;
+        let rows = [];
+        let headers = Array.from(table.querySelectorAll('thead th')).map(th => th.innerText);
+        rows.push(headers);
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            let row = Array.from(tr.children).map(td => td.innerText.trim());
+            rows.push(row);
+        });
+        data[sheetName] = rows;
+    });
+    fetch('/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    }).then(response => response.json())
+      .then(data => { if (data.status === 'success') alert('تم الحفظ بنجاح!'); });
+}
+
+function exportExcel() {
+    window.location.href = '/export';
+}
+
+function deleteRow() {
+    if (selectedRow) {
+        selectedRow.remove();
+        selectedRow = null;
+    } else {
+        alert('يرجى تحديد الصف المراد حذفه!');
+    }
+}
+</script>
+
+</body>
+</html>
