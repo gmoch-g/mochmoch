@@ -4,16 +4,87 @@
     <meta charset="UTF-8">
     <title>نظام إدارة المشاريع</title>
     <style>
-        body { font-family: 'Cairo', sans-serif; margin: 20px; background-color: #f7f7f7; }
-        .toolbar { margin-bottom: 20px; text-align: center; }
-        .toolbar button { margin: 0 10px; padding: 10px 20px; font-size: 18px; cursor: pointer; border: none; border-radius: 5px; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 20px;
+            background-color: #f7f7f7;
+        }
+
+        .toolbar {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 10px;
+            text-align: center;
+            z-index: 1000;
+            border-bottom: 2px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .toolbar button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
         .save-btn { background-color: #4CAF50; color: white; }
+        .save-btn:hover { background-color: #45A049; }
+
         .export-btn { background-color: #2196F3; color: white; }
+        .export-btn:hover { background-color: #1E88E5; }
+
         .delete-btn { background-color: #f44336; color: white; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 40px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #f2f2f2; }
-        tr.selected { background-color: #ffeb3b; }
+        .delete-btn:hover { background-color: #e53935; }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 50px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 70px;
+            z-index: 999;
+        }
+
+        tr.selected {
+            background-color: #fff59d;
+        }
+
+        td[contenteditable="true"] {
+            outline: none;
+        }
+
+        .search-bar {
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .search-bar input {
+            padding: 10px;
+            width: 50%;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
     </style>
 </head>
 <body>
@@ -26,6 +97,11 @@
 
 {% for sheet in sheets_data %}
     <h2>{{ sheet.name }}</h2>
+
+    <div class="search-bar">
+        <input type="text" placeholder="🔍 ابحث في الجدول..." onkeyup="searchTable(this, {{ loop.index0 }})">
+    </div>
+
     <table id="table-{{ loop.index0 }}">
         <thead>
             <tr>
@@ -89,6 +165,75 @@ function deleteRow() {
         alert('يرجى تحديد الصف المراد حذفه!');
     }
 }
+
+// دالة البحث داخل الجدول
+function searchTable(input, tableIndex) {
+    let filter = input.value.toLowerCase();
+    let table = document.getElementById('table-' + tableIndex);
+    let trs = table.querySelectorAll('tbody tr');
+    trs.forEach(tr => {
+        let found = false;
+        tr.querySelectorAll('td').forEach(td => {
+            if (td.innerText.toLowerCase().includes(filter)) {
+                found = true;
+            }
+        });
+        tr.style.display = found ? '' : 'none';
+    });
+}
+
+// دالة تلوين الخلايا حسب القيم
+function applyCellColor(cell) {
+    let value = cell.innerText.trim();
+
+    if (value === "تم الإعلان") {
+        cell.style.backgroundColor = "#388E3C";
+        let nextCell = cell.nextElementSibling;
+        if (nextCell) nextCell.style.backgroundColor = "white";
+    } else if (value === "تم") {
+        cell.style.backgroundColor = "#388E3C";
+        let nextCell = cell.nextElementSibling;
+        if (nextCell) {
+            let nextValue = nextCell.innerText.trim();
+            if (nextValue === "") {
+                nextCell.style.backgroundColor = "#EF6C00"; // برتقالي
+            } else if (/^\d{4}-\d{2}-\d{2}$/.test(nextValue)) {
+                let cellDate = new Date(nextValue);
+                let today = new Date();
+                cellDate.setHours(0,0,0,0);
+                today.setHours(0,0,0,0);
+                if (cellDate < today) {
+                    nextCell.style.backgroundColor = "#388E3C"; // أخضر
+                } else if (cellDate > today) {
+                    nextCell.style.backgroundColor = "#FFF176"; // أصفر
+                }
+            } else {
+                nextCell.style.backgroundColor = "white";
+            }
+        }
+    } else if (value.includes("%")) {
+        let num = parseFloat(value.replace("%", ""));
+        if (!isNaN(num)) {
+            if (num < 0) {
+                cell.style.backgroundColor = "#EF5350"; // أحمر فاتح
+            } else if (num > 0) {
+                cell.style.backgroundColor = "#388E3C"; // أخضر
+            } else {
+                cell.style.backgroundColor = "white";
+            }
+        }
+    } else {
+        cell.style.backgroundColor = "white";
+    }
+}
+
+// تلوين جميع الخلايا عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('td').forEach(cell => {
+        applyCellColor(cell);
+        cell.addEventListener('input', () => applyCellColor(cell));
+    });
+});
 </script>
 
 </body>
