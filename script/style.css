@@ -1,0 +1,23 @@
+.wide-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 30px;
+}
+
+.large-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 18px; /* تكبير الخط */
+}
+
+.large-table th,
+.large-table td {
+  border: 1px solid #999;
+  padding: 12px; /* تكبير الحشوة */
+  text-align: center;
+}
+
+.large-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}

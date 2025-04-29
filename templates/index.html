@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
    <div style="text-align: right; line-height: 1.8; font-family: Arial, sans-serif; font-size: 14px; color: #333; margin: 10px 20px;">
     <div style="font-weight: bold;">وزارة الإعمار والإسكان والبلديات والأشغال العامة</div>
     <div style="font-weight: bold;">المديرية العامة للمجاري</div>
@@ -17,6 +18,7 @@ body {
     margin: 0;
     padding: 0;
 }
+
 table {
     border-collapse: collapse;
     width: 100%;
@@ -43,10 +45,16 @@ table {
 }
 
 table {
-    width: 200%; /* أو auto حسب حاجتك */
+    width: 300%; /* أو auto حسب حاجتك */
     border-collapse: collapse;
     margin-top: 10px;
 }
+#orders-2025 {
+    width: 300%;
+    border-collapse: collapse;
+
+}
+
 
 th, td {
     padding: 8px;
@@ -130,6 +138,11 @@ thead th {
     border-radius: 6px;
     box-sizing: border-box;
 }
+/* تكبير خاص بجدول "متابعة اوامر غيار 2025" */
+        .followup-big-table {
+            font-size: 18px;
+            table-layout: auto;
+        }
 .tabs {
     display: flex;
     background: linear-gradient(to right, #f9d423, #ff4e50); /* تدرج جذاب */
@@ -159,7 +172,10 @@ thead th {
     background: #ff4e50;
     color: white;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* ظل لما تكون نشطة */
+
 }
+
+
 </style>
 </head>
 <body>
@@ -295,7 +311,6 @@ function applyInstantColor(cell) {
             }
         }
     }
-
     // --- متابعة أوامر غيار 2025 ---
     else if (sheetName.includes('متابعة اوامر غيار 2025')) {
         if (allowedColumnsFollowUp.includes(cellIndex)) {
@@ -373,13 +388,20 @@ function addRow() {
     tbody.appendChild(newRow);
     newRow.scrollIntoView({ behavior: "smooth", block: "center" });
 }
-
 function deleteSelectedRow() {
     const activeSheet = document.querySelector('.sheet.active');
     const table = activeSheet.querySelector('table');
     const selectedRow = table.querySelector('tbody tr.selected');
-    if (selectedRow) selectedRow.remove();
-    else alert('⚠️ الرجاء تحديد صف أولاً للحذف');
+
+    if (!selectedRow) {
+        alert('⚠️ الرجاء تحديد صف أولاً للحذف');
+        return;
+    }
+
+    const confirmation = confirm('هل أنت متأكد من حذف هذا الصف؟');
+    if (!confirmation) return;
+
+    selectedRow.remove();
 }
 
 function exportExcel() {

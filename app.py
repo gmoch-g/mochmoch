@@ -8,7 +8,6 @@ import os
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXCEL_FILE_PATH = os.path.join(BASE_DIR, 'data.xlsx')
-
 @app.route('/')
 def index():
     wb = load_workbook(EXCEL_FILE_PATH, data_only=True)
@@ -29,38 +28,63 @@ def index():
 @app.route('/save', methods=['POST'])
 def save():
     try:
+
         data = request.get_json()
 
         wb = load_workbook(EXCEL_FILE_PATH)
 
         for sheet_name, rows in data.items():
+
             if sheet_name not in wb.sheetnames:
                 continue
 
             sheet = wb[sheet_name]
-            for row_index, row in enumerate(rows[1:], start=2):  # تجاهل العناوين
-                for col_index, value in enumerate(row, start=1):
-                    cell = sheet.cell(row=row_index, column=col_index)
+
+            max_row = sheet.max_row
+
+            max_column = sheet.max_column
+
+            # امسح المحتوى السابق من الشيت (عدا العناوين في الصف الأول)
+
+            for row in sheet.iter_rows(min_row=2, max_row=max_row, max_col=max_column):
+
+                for cell in row:
+
                     if not isinstance(cell, MergedCell):
+                        cell.value = None
+
+            # اكتب البيانات الجديدة كما هي (حتى لو الصف فارغ)
+
+            for row_index, row in enumerate(rows[1:], start=2):  # تجاهل العناوين
+
+                for col_index, value in enumerate(row, start=1):
+
+                    cell = sheet.cell(row=row_index, column=col_index)
+
+                    if not isinstance(cell, MergedCell):
+
                         if value in ("None", None):
                             value = ""
+
                         cell.value = value
 
         wb.save(EXCEL_FILE_PATH)
-        apply_styles(EXCEL_FILE_PATH)  # ← صح هنا تستدعي apply_styles بعد الحفظ
-        wb.save(EXCEL_FILE_PATH)  # ← تحفظ مرة ثانية بعد التلوين
+
+        apply_styles(EXCEL_FILE_PATH)
+
+        wb.save(EXCEL_FILE_PATH)
 
         return jsonify({'status': 'success'})
 
+
+    except Exception as e:
+
+        print(f"Error while saving: {e}")
+
+        return jsonify({'status': 'error', 'message': str(e)}), 500
     except Exception as e:
         print(f"Error while saving: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
-
-
-def apply_styles(file_path):
-    wb = load_workbook(file_path)
-    today = datetime.today()
-
     # ألوان الخلايا
     COLORS = {
         'fireRed': 'B71C1C',  # أحمر دموي ناري
