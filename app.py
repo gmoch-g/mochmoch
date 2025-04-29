@@ -9,13 +9,6 @@ app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXCEL_FILE_PATH = os.path.join(BASE_DIR, 'data.xlsx')
 
-# 🎨 إعداد الألوان
-green_fill = PatternFill(start_color="388E3C", end_color="388E3C", fill_type="solid")  # أخضر
-orange_fill = PatternFill(start_color="EF6C00", end_color="EF6C00", fill_type="solid") # برتقالي
-yellow_fill = PatternFill(start_color="FFF176", end_color="FFF176", fill_type="solid") # أصفر
-red_fill = PatternFill(start_color="EF5350", end_color="EF5350", fill_type="solid")    # أحمر فاتح
-white_fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")  # أبيض
-
 @app.route('/')
 def index():
     wb = load_workbook(EXCEL_FILE_PATH, data_only=True)
@@ -32,78 +25,6 @@ def index():
 
     return render_template('index.html', sheets_data=sheets_data)
 
-# 📄 دالة تطبيق التلوين حسب كل شيت
-def apply_styles(sheet, row_idx):
-    title = sheet.title.strip()
-    headers = [cell.value for cell in sheet[1]]
-
-    # 🔵 الشيت الأول - متابعة المشاريع وزارة التخطيط
-    if title == "شيت متابعة المشاريع وزارة التخطيط":
-        for col_idx, cell in enumerate(sheet[row_idx], start=1):
-            value = str(cell.value).strip() if cell.value else ''
-            next_cell = sheet.cell(row=row_idx, column=col_idx + 1)
-
-            if value == "تم الإعلان":
-                cell.fill = green_fill
-                if next_cell:
-                    next_cell.fill = white_fill
-
-            elif value == "تم":
-                cell.fill = green_fill
-                if next_cell:
-                    next_value = str(next_cell.value).strip() if next_cell.value else ''
-                    if next_value == "":
-                        next_cell.fill = orange_fill
-                    elif next_value and next_value.count("-") == 2:
-                        try:
-                            cell_date = datetime.strptime(next_value, "%Y-%m-%d").date()
-                            today = datetime.today().date()
-                            if cell_date < today:
-                                next_cell.fill = green_fill
-                            elif cell_date > today:
-                                next_cell.fill = yellow_fill
-                        except:
-                            next_cell.fill = white_fill
-                    else:
-                        next_cell.fill = white_fill
-            else:
-                cell.fill = white_fill
-
-    # 🔵 الشيت الثاني - متابعة مشاريع قيد التنفيذ
-    elif title == "متابعة مشاريع قيد التنفيذ":
-        if "نسبة الانحراف %" in headers:
-            idx = headers.index("نسبة الانحراف %") + 1
-            cell = sheet.cell(row=row_idx, column=idx)
-            try:
-                num = float(cell.value)
-                if num < 0:
-                    cell.fill = red_fill
-                elif num > 0:
-                    cell.fill = green_fill
-                else:
-                    cell.fill = white_fill
-            except:
-                cell.fill = white_fill
-
-    # 🔵 الشيت الثالث - متابعة التوقفات والمدد الإضافية وأمر الغيار
-    elif title in ["متابعة التوقفات", "متابعة المدد الاضافية", "تحديث وامر الغيار"]:
-        if "تاريخ الإنجاز المتوقع" in headers:
-            idx = headers.index("تاريخ الإنجاز المتوقع") + 1
-            cell = sheet.cell(row=row_idx, column=idx)
-            prev_cell = sheet.cell(row=row_idx - 1, column=idx) if row_idx > 2 else None
-            try:
-                today = datetime.today().date()
-                current_date = datetime.strptime(str(cell.value).split()[0], "%Y-%m-%d").date()
-
-                if prev_cell and prev_cell.value:
-                    prev_date = datetime.strptime(str(prev_cell.value).split()[0], "%Y-%m-%d").date()
-                    if current_date > prev_date:
-                        cell.fill = orange_fill  # تأخر عن السطر السابق
-
-                if current_date > today:
-                    cell.fill = red_fill  # التاريخ بالمستقبل
-            except:
-                pass
 
 @app.route('/save', methods=['POST'])
 def save():
@@ -124,18 +45,141 @@ def save():
                         if value in ("None", None):
                             value = ""
                         cell.value = value
-                apply_styles(sheet, row_index)
 
         wb.save(EXCEL_FILE_PATH)
+        apply_styles(EXCEL_FILE_PATH)  # ← صح هنا تستدعي apply_styles بعد الحفظ
+        wb.save(EXCEL_FILE_PATH)  # ← تحفظ مرة ثانية بعد التلوين
+
         return jsonify({'status': 'success'})
 
     except Exception as e:
         print(f"Error while saving: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-@app.route('/export')
-def export():
-    return send_file(EXCEL_FILE_PATH, as_attachment=True)
+
+def apply_styles(file_path):
+    wb = load_workbook(file_path)
+    today = datetime.today()
+
+    # ألوان الخلايا
+    COLORS = {
+        'fireRed': 'FFC7CE',  # أحمر فاتح
+        'darkGreen': 'C6EFCE',  # أخضر فاتح
+        'white': 'FFFFFF',  # أبيض
+        'orange': 'FFEB9C',  # برتقالي فاتح
+        'lightGray': 'D9D9D9',  # رمادي فاتح
+    }
+
+    # الأعمدة التي فيها تواريخ متابعة أوامر غيار 2025
+    allowedColumnsFollowUp = [7, 9, 11, 13, 16, 18, 21]
+
+    for sheet in wb.worksheets:
+        sheet_name = sheet.title.strip()
+
+        for row in sheet.iter_rows(min_row=2):
+            for idx, cell in enumerate(row):
+                value = str(cell.value).strip() if cell.value else ''
+                valueClean = value.replace("-", "/").replace(" ", "")
+
+                # متابعة مشاريع قيد التنفيذ
+                if sheet_name == 'متابعة مشاريع قيد التنفيذ':
+                    if idx >= 9:
+                        try:
+                            val = float(value)
+                            if val < 0:
+                                cell.fill = PatternFill(start_color=COLORS['fireRed'], end_color=COLORS['fireRed'],
+                                                        fill_type='solid')
+                            elif val > 0:
+                                cell.fill = PatternFill(start_color=COLORS['darkGreen'], end_color=COLORS['darkGreen'],
+                                                        fill_type='solid')
+                            else:
+                                cell.fill = PatternFill(start_color=COLORS['white'], end_color=COLORS['white'],
+                                                        fill_type='solid')
+                        except ValueError:
+                            pass
+
+                # متابعة المشاريع وزارة التخطيط
+                elif sheet_name == 'متابعة المشاريع وزارة التخطيط':
+                    if idx > 8:
+                        prevCell = row[idx - 1] if idx > 0 else None
+                        nextCell = row[idx + 1] if idx + 1 < len(row) else None
+                        nextNextCell = row[idx + 2] if idx + 2 < len(row) else None
+
+                        if value == "إعلان":
+                            cell.fill = PatternFill(start_color=COLORS['darkGreen'], end_color=COLORS['darkGreen'],
+                                                    fill_type='solid')
+                            if nextCell: nextCell.fill = PatternFill(start_color=COLORS['white'],
+                                                                     end_color=COLORS['white'], fill_type='solid')
+                            if nextNextCell: nextNextCell.fill = PatternFill(start_color=COLORS['orange'],
+                                                                             end_color=COLORS['orange'],
+                                                                             fill_type='solid')
+
+                        elif value == "تم":
+                            cell.fill = PatternFill(start_color=COLORS['darkGreen'], end_color=COLORS['darkGreen'],
+                                                    fill_type='solid')
+                            if nextCell: nextCell.fill = PatternFill(start_color=COLORS['orange'],
+                                                                     end_color=COLORS['orange'], fill_type='solid')
+                            if nextNextCell: nextNextCell.fill = PatternFill(start_color=COLORS['lightGray'],
+                                                                             end_color=COLORS['lightGray'],
+                                                                             fill_type='solid')
+
+                        elif value == "":
+                            if prevCell and str(prevCell.value).strip() == "تم":
+                                cell.fill = PatternFill(start_color=COLORS['orange'], end_color=COLORS['orange'],
+                                                        fill_type='solid')
+                                if nextCell: nextCell.fill = PatternFill(start_color=COLORS['lightGray'],
+                                                                         end_color=COLORS['lightGray'],
+                                                                         fill_type='solid')
+                            else:
+                                cell.fill = PatternFill(start_color=COLORS['lightGray'], end_color=COLORS['lightGray'],
+                                                        fill_type='solid')
+
+                        else:
+                            parts = valueClean.split("/")
+                            if len(parts) == 3:
+                                try:
+                                    cellDate = datetime(int(parts[0]), int(parts[1]), int(parts[2]))
+                                    if cellDate <= today:
+                                        cell.fill = PatternFill(start_color=COLORS['darkGreen'],
+                                                                end_color=COLORS['darkGreen'], fill_type='solid')
+                                        if nextCell: nextCell.fill = PatternFill(start_color=COLORS['orange'],
+                                                                                 end_color=COLORS['orange'],
+                                                                                 fill_type='solid')
+                                        if nextNextCell: nextNextCell.fill = PatternFill(
+                                            start_color=COLORS['lightGray'], end_color=COLORS['lightGray'],
+                                            fill_type='solid')
+                                    else:
+                                        cell.fill = PatternFill(start_color=COLORS['fireRed'],
+                                                                end_color=COLORS['fireRed'], fill_type='solid')
+                                        if nextCell: nextCell.fill = PatternFill(start_color=COLORS['lightGray'],
+                                                                                 end_color=COLORS['lightGray'],
+                                                                                 fill_type='solid')
+                                except:
+                                    pass
+
+                # متابعة أوامر غيار 2025
+                elif 'متابعة اوامر غيار 2025' in sheet_name:
+                    if idx in allowedColumnsFollowUp:
+                        prevCell = row[idx - 1] if idx > 0 else None
+                        if prevCell:
+                            enteredParts = valueClean.split("/")
+                            prevValue = str(prevCell.value).strip().replace("-", "/") if prevCell.value else ''
+                            prevParts = prevValue.split("/")
+
+                            try:
+                                enteredDate = datetime(int(enteredParts[0]), int(enteredParts[1]), int(enteredParts[2]))
+                                prevDate = datetime(int(prevParts[0]), int(prevParts[1]), int(prevParts[2]))
+                                if enteredDate > prevDate:
+                                    cell.fill = PatternFill(start_color=COLORS['orange'], end_color=COLORS['orange'],
+                                                            fill_type='solid')
+                                elif enteredDate < prevDate:
+                                    cell.fill = PatternFill(start_color=COLORS['fireRed'], end_color=COLORS['fireRed'],
+                                                            fill_type='solid')
+                                else:
+                                    cell.fill = PatternFill(start_color=COLORS['darkGreen'],
+                                                            end_color=COLORS['darkGreen'], fill_type='solid')
+                            except:
+                                pass
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -88,20 +88,24 @@
     </style>
 </head>
 <body>
-
 <div class="toolbar">
-    <button class="save-btn" onclick="saveChanges()">💾 حفظ التعديلات</button>
-    <button class="export-btn" onclick="exportExcel()">📥 تصدير إلى Excel</button>
-    <button class="delete-btn" onclick="deleteRow()">🗑️ حذف الصف المحدد</button>
-</div>
 
+  <button class="save-btn" onclick="saveChanges()">💾 حفظ التعديلات</button>
+  <button class="add-btn" onclick="addRow()">➕ إضافة صف</button>
+  <button class="delete-btn" onclick="deleteRow()">🗑️ حذف صف</button>
+  <button class="add-btn" onclick="exportExcel()">📥 تصدير إلى Excel</button>
+
+</div>
+</script>
 {% for sheet in sheets_data %}
     <h2>{{ sheet.name }}</h2>
 
     <div class="search-bar">
         <input type="text" placeholder="🔍 ابحث في الجدول..." onkeyup="searchTable(this, {{ loop.index0 }})">
     </div>
-
+ <div class="goToReportFields">
+<button class="report-btn" onclick="goToReportFields()">📄 اختيار الحقول للتقرير</button>
+  </div>
     <table id="table-{{ loop.index0 }}">
         <thead>
             <tr>
@@ -234,7 +238,56 @@ document.addEventListener('DOMContentLoaded', function() {
         cell.addEventListener('input', () => applyCellColor(cell));
     });
 });
-</script>
+    function generateReport() {
+    let selectedFields = {}; // {اسم الشيت: [حقول مختارة]}
+    document.querySelectorAll('#field-selection input:checked').forEach(input => {
+        let [sheetName, fieldName] = input.value.split('|');
+        if (!selectedFields[sheetName]) selectedFields[sheetName] = [];
+        selectedFields[sheetName].push(fieldName);
+    });
 
-</body>
-</html>
+    if (Object.keys(selectedFields).length === 0) {
+        alert('رجاءً اختر حقول لتوليد التقرير!');
+        return;
+    }
+
+    let tables = document.querySelectorAll('table');
+    let sheetNames = Array.from(document.querySelectorAll('h2')).map(h2 => h2.innerText);
+
+    let reportWindow = window.open('', '_blank');
+    reportWindow.document.write('<html><head><title>التقرير المخصص</title>');
+    reportWindow.document.write('<style>table {width:100%;border-collapse:collapse;margin-bottom:20px;} th,td {border:1px solid #ccc;padding:8px;text-align:center;} th {background:#f2f2f2;}</style>');
+    reportWindow.document.write('</head><body><h2>📋 التقرير المخصص</h2>');
+
+    tables.forEach((table, tableIndex) => {
+        let sheetName = sheetNames[tableIndex];
+        if (!selectedFields[sheetName]) return; // اذا ما اختار من هذا الشيت نتجاهله
+
+        let headers = Array.from(table.querySelectorAll('thead th')).map(th => th.innerText.trim());
+        let headerIndexes = headers.map((header, index) => selectedFields[sheetName].includes(header) ? index : -1).filter(i => i >= 0);
+
+        if (headerIndexes.length === 0) return;
+
+        reportWindow.document.write('<h3>📄 ' + sheetName + '</h3>');
+        reportWindow.document.write('<table><thead><tr>');
+        headerIndexes.forEach(i => {
+            reportWindow.document.write('<th>' + headers[i] + '</th>');
+        });
+        reportWindow.document.write('</tr></thead><tbody>');
+
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            reportWindow.document.write('<tr>');
+            let cells = tr.querySelectorAll('td');
+            headerIndexes.forEach(i => {
+                reportWindow.document.write('<td>' + cells[i].innerText + '</td>');
+            });
+            reportWindow.document.write('</tr>');
+        });
+
+        reportWindow.document.write('</tbody></table>');
+    });
+
+    reportWindow.document.write('</body></html>');
+    reportWindow.document.close();
+}
+</script>]

@@ -202,123 +202,15 @@ thead th {
     {% endfor %}
 </div>
 <script>
-
 function cleanDate(cell) {
     const value = cell.innerText.trim();
     if (value) {
-        const parts = value.split(/[-\/ :T]/);
+        const parts = value.split(/[-\/ :T]/); // يفصل على أساس شرطة أو سلاش أو نقطتين أو حرف T
         if (parts.length >= 3) {
             const year = parts[0];
             const month = parts[1].padStart(2, '0');
             const day = parts[2].padStart(2, '0');
-            cell.innerText = `${year}-${month}-${day}`;
-        }
-    }
-}
-// تأكد أن تعريف الألوان موجود قبل استخدام الدالة
-const COLORS = {
-    fireRed: '#FF7F7F',
-    darkGreen: '#228B22',
-    white: '#FFFFFF',
-    orange: '#FFA500',
-    lightGray: '#D3D3D3'
-};
-
-function applyInstantColor(cell) {
-    const valueRaw = cell.innerText.trim();
-    const value = valueRaw.replace(/-/g, "/").replace(/\s+/g, "");
-    const row = cell.parentElement;
-    const table = row.closest('table');
-    const sheetName = table.closest('.sheet').querySelector('h2').textContent.trim();
-    const cellIndex = Array.from(row.children).indexOf(cell);
-    const headerCells = Array.from(table.querySelectorAll('thead th'));
-    const columnTitle = headerCells[cellIndex]?.textContent.trim() || '';
-    const today = new Date();
-
-    // ألوان حسب الخطة
-    const allowedColumnsFollowUp = [7, 9, 11, 13, 16, 18, 21];
-
-    // --- متابعة مشاريع قيد التنفيذ ---
-    if (sheetName === 'متابعة مشاريع قيد التنفيذ') {
-        if (cellIndex >= 9) {
-            const cellValue = parseFloat(valueRaw);
-            if (!isNaN(cellValue)) {
-                if (cellValue < 0) cell.style.backgroundColor = COLORS.fireRed;
-                else if (cellValue > 0) cell.style.backgroundColor = COLORS.darkGreen;
-                else cell.style.backgroundColor = COLORS.white;
-            }
-        }
-    }
-
-    // --- متابعة المشاريع وزارة التخطيط ---
-    else if (sheetName === 'متابعة المشاريع وزارة التخطيط') {
-        if (cellIndex > 8) {
-            const columns = row.querySelectorAll('td');
-            const prevCell = cellIndex > 0 ? columns[cellIndex - 1] : null;
-            const nextCell = cell.nextElementSibling;
-            const nextNextCell = nextCell ? nextCell.nextElementSibling : null;
-
-            if (valueRaw === "إعلان") {
-                cell.style.backgroundColor = COLORS.darkGreen;
-                if (nextCell) nextCell.style.backgroundColor = COLORS.white;
-                if (nextNextCell) nextNextCell.style.backgroundColor = COLORS.orange;
-            } else if (valueRaw === "تم") {
-                cell.style.backgroundColor = COLORS.darkGreen;
-                cell.style.color = "#FFFFFF";
-                if (nextCell) nextCell.style.backgroundColor = COLORS.orange;
-                if (nextNextCell) nextNextCell.style.backgroundColor = COLORS.lightGray;
-            } else if (valueRaw === "") {
-                if (prevCell && prevCell.innerText.trim() === "تم") {
-                    cell.style.backgroundColor = COLORS.orange;
-                    if (nextCell) nextCell.style.backgroundColor = COLORS.lightGray;
-                } else {
-                    cell.style.backgroundColor = COLORS.lightGray;
-                }
-            } else {
-                const parts = valueRaw.split("/");
-                if (parts.length === 3) {
-                    const year = parseInt(parts[0]);
-                    const month = parseInt(parts[1]);
-                    const day = parseInt(parts[2]);
-                    const cellDate = new Date(year, month - 1, day);
-                    if (!isNaN(cellDate.getTime())) {
-                        if (cellDate <= today) {
-                            cell.style.backgroundColor = COLORS.darkGreen;
-                            if (nextCell) nextCell.style.backgroundColor = COLORS.orange;
-                            if (nextNextCell) nextNextCell.style.backgroundColor = COLORS.lightGray;
-                        } else {
-                            cell.style.backgroundColor = COLORS.fireRed;
-                            if (nextCell) nextCell.style.backgroundColor = COLORS.lightGray;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // --- متابعة أوامر غيار 2025 ---
-    else if (sheetName.includes('متابعة اوامر غيار 2025')) {
-        if (allowedColumnsFollowUp.includes(cellIndex)) {
-            const prevCell = cellIndex > 0 ? row.children[cellIndex - 1] : null;
-            const prevValue = prevCell?.innerText.trim() || '';
-
-            const enteredParts = value.split(/[-\/]/);
-            const prevParts = prevValue.split(/[-\/]/);
-
-            let enteredDate = (enteredParts.length >= 3) ? new Date(+enteredParts[0], enteredParts[1] - 1, +enteredParts[2]) : null;
-            let prevDate = (prevParts.length >= 3) ? new Date(+prevParts[0], prevParts[1] - 1, +prevParts[2]) : null;
-
-            if (enteredDate instanceof Date && !isNaN(enteredDate.getTime())) {
-                if (prevDate instanceof Date && !isNaN(prevDate.getTime())) {
-                    if (enteredDate > prevDate) {
-                        cell.style.backgroundColor = COLORS.orange; // أكبر من التاريخ السابق
-                    } else if (enteredDate < prevDate) {
-                        cell.style.backgroundColor = COLORS.fireRed; // أصغر من التاريخ السابق
-                    } else {
-                        cell.style.backgroundColor = COLORS.darkGreen; // يساوي التاريخ السابق
-                    }
-                }
-            }
+            cell.innerText = `${year}-${month}-${day}`; // يرجع التاريخ نظيف بدون وقت
         }
     }
 }
@@ -329,6 +221,7 @@ function showSheet(index) {
     document.querySelectorAll('.tab')[index].classList.add('active');
     document.querySelectorAll('.sheet')[index].classList.add('active');
 }
+showSheet(0);
 
 function saveChanges() {
     const sheets = document.querySelectorAll('.sheet');
@@ -350,37 +243,211 @@ function saveChanges() {
     })
     .then(res => res.json())
     .then(res => {
-        if (res.status === 'success') alert('✅ تم الحفظ بنجاح');
-        else alert('❌ حدث خطأ أثناء الحفظ');
+        if (res.status === 'success') {
+            alert('✅ تم الحفظ بنجاح');
+        } else {
+            alert('❌ حدث خطأ أثناء الحفظ');
+        }
     })
     .catch(err => alert('❌ فشل الاتصال بالخادم'));
 }
 
-function addRow() {
-    const activeSheet = document.querySelector('.sheet.active');
-    const table = activeSheet.querySelector('table');
-    const tbody = table.querySelector('tbody');
-    const newRow = document.createElement('tr');
-    const columnsCount = table.querySelector('thead tr').children.length;
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('td').forEach(cell => {
+        cleanDate(cell); // تطبق التنسيق عند التحميل
+    });
+});
 
-    for (let i = 0; i < columnsCount; i++) {
-        const newCell = document.createElement('td');
-        newCell.contentEditable = "true";
-        newCell.textContent = '';
-        newRow.appendChild(newCell);
+// دالة تقوم بتلوين خلية معينة بناءً على القيم
+function applyInstantColor(cell) {
+    const valueRaw = cell.innerText.trim();
+    const value = valueRaw.replace(/-/g, "/").replace(/\s+/g, "");
+    const row = cell.parentElement;
+    const table = row.closest('table');
+    const sheetName = table.closest('.sheet').querySelector('h2').textContent.trim();
+    const cellIndex = Array.from(row.children).indexOf(cell);
+    const headerCells = Array.from(table.querySelectorAll('thead th'));
+    const columnTitle = headerCells[cellIndex]?.textContent.trim() || '';
+    const today = new Date();
+
+    // تعريف الألوان
+    const COLORS = {
+        darkGreen: "#005500",
+        yellow: "#FFFF00",
+        orange: "#FFA500",
+        lightGray: "#D3D3D3",
+        fireRed: "#FF4500",
+        white: "#FFFFFF",
+        lightGreen: "#66bb6a",
+        red: "#ef5350",
+        orangeLight: "#ffa726"
+    };
+
+    // نتأكد أن اسم الشيت هو "متابعة اوامر غيار 2025"
+    if (sheetName.includes('متابعة اوامر غيار 2025')) {
+        const rows = Array.from(row.parentElement.children);
+        const rowIndex = rows.indexOf(row);
+        const prevRow = rows[rowIndex - 1];
+        const currentValue = cell.innerText.trim();
+        const previousValue = prevRow ? prevRow.children[cellIndex].innerText.trim() : null;
+
+        const currentDate = new Date(currentValue);
+        const previousDate = new Date(previousValue);
+
+        if (!isNaN(currentDate) && !isNaN(previousDate)) {
+            if (currentDate > previousDate) {
+                cell.style.backgroundColor = COLORS.orangeLight; // اللون البرتقالي الفاتح
+            } else if (currentDate < previousDate) {
+                cell.style.backgroundColor = COLORS.red; // اللون الأحمر
+            } else {
+                cell.style.backgroundColor = COLORS.lightGreen; // اللون الأخضر الفاتح
+            }
+        }
     }
 
+    // نتأكد أن اسم الشيت هو "متابعة مشاريع قيد التنفيذ"
+    if (sheetName === 'متابعة مشاريع قيد التنفيذ') {
+        console.log("شيت مختلف. التلوين الخاص غير مفعّل هنا.");
+        return;
+    }
+
+    // عمليات تلوين أخرى حسب الشيتات المختلفة
+    const tableRows = document.querySelectorAll('table tbody tr');
+    tableRows.forEach(row => {
+        const columns = row.querySelectorAll('td');
+        for (let i = 9; i < columns.length; i++) {
+            const cell = columns[i];
+            const cellValue = parseFloat(cell.innerText.trim());
+
+            if (!isNaN(cellValue)) {
+                if (cellValue < 0) {
+                    cell.style.backgroundColor = COLORS.fireRed; // أقل من صفر
+                } else if (cellValue > 0) {
+                    cell.style.backgroundColor = COLORS.darkGreen; // أكبر من صفر
+                } else {
+                    cell.style.backgroundColor = COLORS.white; // يساوي صفر
+                }
+            }
+        }
+    });
+
+    // التلوين الخاص لشيت "متابعة المشاريع وزارة التخطيط"
+    if (sheetName !== "متابعة المشاريع وزارة التخطيط") {
+        console.log("شيت مختلف. التلوين الخاص غير مفعّل هنا.");
+        return;
+    }
+
+    const announcementColumnIndex = 8; // العمود التاسع (I)
+    if (columns.length > announcementColumnIndex) {
+        columns.forEach((cell, index) => {
+            if (index > announcementColumnIndex) {
+                const valueRaw = cell.innerText.trim();
+                const prevCell = index > 0 ? columns[index - 1] : null;
+                const nextCell = cell.nextElementSibling;
+                const nextNextCell = nextCell ? nextCell.nextElementSibling : null;
+
+                // حالات التلوين حسب القيم
+                if (valueRaw === "إعلان") {
+                    cell.style.backgroundColor = COLORS.darkGreen;
+                    if (nextCell) nextCell.style.backgroundColor = COLORS.white;
+                    if (nextNextCell) nextNextCell.style.backgroundColor = COLORS.orange;
+                } else if (valueRaw === "تم") {
+                    cell.style.backgroundColor = COLORS.darkGreen;
+                    cell.style.color = "#FFFFFF";
+                    if (nextCell) nextCell.style.backgroundColor = COLORS.orange;
+                    if (nextNextCell) nextNextCell.style.backgroundColor = COLORS.lightGray;
+                } else if (valueRaw === "") {
+                    if (prevCell) {
+                        const prevValue = prevCell.innerText.trim();
+                        if (prevValue === "تم") {
+                            cell.style.backgroundColor = COLORS.orange;
+                            if (nextCell) nextCell.style.backgroundColor = COLORS.lightGray;
+                        } else {
+                            cell.style.backgroundColor = COLORS.lightGray;
+                        }
+                    } else {
+                        cell.style.backgroundColor = COLORS.lightGray;
+                    }
+                } else {
+                    let isDate = false;
+                    const parts = valueRaw.split("/");
+                    if (parts.length === 3) {
+                        const year = parseInt(parts[0]);
+                        const month = parseInt(parts[1]);
+                        const day = parseInt(parts[2]);
+                        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+                            const cellDate = new Date(year, month - 1, day);
+                            if (!isNaN(cellDate.getTime())) {
+                                isDate = true;
+                                if (cellDate <= new Date()) {
+                                    cell.style.backgroundColor = COLORS.darkGreen;
+                                    if (nextCell) nextCell.style.backgroundColor = COLORS.orange;
+                                    if (nextNextCell) nextNextCell.style.backgroundColor = COLORS.lightGray;
+                                } else {
+                                    cell.style.backgroundColor = COLORS.red;
+                                    if (nextCell) nextCell.style.backgroundColor = COLORS.lightGray;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+document.addEventListener('input', function(e) {
+    if (e.target.tagName === 'TD') {
+        applyInstantColor(e.target);
+    }
+});
+
+function addRow(button) {
+    const sheet = button.parentElement;
+    const tbody = sheet.querySelector('tbody');
+    const newRow = document.createElement('tr');
+    const columns = sheet.querySelectorAll('thead th').length;
+    for (let i = 0; i < columns; i++) {
+        const td = document.createElement('td');
+        td.contentEditable = "true";
+        newRow.appendChild(td);
+    }
     tbody.appendChild(newRow);
-    newRow.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function filterTable(input) {
+    const filter = input.value.toLowerCase();
+    const table = input.nextElementSibling;
+    const rows = table.querySelectorAll("tbody tr");
+
+    rows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll("td"));
+        const match = cells.some(cell => cell.textContent.toLowerCase().includes(filter));
+        row.style.display = match ? "" : "none";
+    });
 }
 
 function deleteSelectedRow() {
     const activeSheet = document.querySelector('.sheet.active');
     const table = activeSheet.querySelector('table');
     const selectedRow = table.querySelector('tbody tr.selected');
-    if (selectedRow) selectedRow.remove();
-    else alert('⚠️ الرجاء تحديد صف أولاً للحذف');
+
+    if (selectedRow) {
+        selectedRow.remove();
+    } else {
+        alert('⚠️ الرجاء تحديد صف أولاً للحذف');
+    }
 }
+
+// تحديد الصف عند الضغط عليه
+document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'TD') {
+        const row = e.target.parentElement;
+        const table = row.closest('table');
+        table.querySelectorAll('tr').forEach(r => r.classList.remove('selected'));
+        row.classList.add('selected');
+    }
+});
 
 function exportExcel() {
     const activeSheet = document.querySelector('.sheet.active');
@@ -396,38 +463,47 @@ function exportExcel() {
     a.click();
 }
 
-function filterTable(input) {
-    const filter = input.value.toLowerCase();
-    const table = input.nextElementSibling;
-    const rows = table.querySelectorAll("tbody tr");
+function addRow(button = null) {
+    const activeSheet = document.querySelector('.sheet.active');
+    const table = activeSheet.querySelector('table');
+    const tbody = table.querySelector('tbody');
 
-    rows.forEach(row => {
-        const cells = Array.from(row.querySelectorAll("td"));
-        const match = cells.some(cell => cell.textContent.toLowerCase().includes(filter));
-        row.style.display = match ? "" : "none";
-    });
+    const newRow = document.createElement('tr');
+
+    const columnsCount = table.querySelector('thead tr').children.length;
+    for (let i = 0; i < columnsCount; i++) {
+        const newCell = document.createElement('td');
+        newCell.contentEditable = "true";
+        newCell.textContent = '';
+        newRow.appendChild(newCell);
+    }
+
+    // تلوين الصف حسب زوجي أو فردي
+    if (tbody.rows.length % 2 === 0) {
+        newRow.style.backgroundColor = "#f1f8e9";
+    } else {
+        newRow.style.backgroundColor = "white";
+    }
+
+    tbody.appendChild(newRow);
+    newRow.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
-// أحداث تلقائية عند تحميل الصفحة
-window.onload = function() {
-    showSheet(0);
-    document.querySelectorAll('td').forEach(cell => {
-        cleanDate(cell);
-        applyInstantColor(cell);
-    });
-};
+// إضافة صف تلقائي عند الضغط Enter بآخر خلية
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        const activeSheet = document.querySelector('.sheet.active');
+        const table = activeSheet.querySelector('table');
+        const lastCell = table.querySelector('tbody tr:last-child td:last-child');
 
-// تحديد الصف عند الضغط
-
-document.addEventListener('click', function(e) {
-    if (e.target.tagName === 'TD') {
-        const row = e.target.parentElement;
-        const table = row.closest('table');
-        table.querySelectorAll('tr').forEach(r => r.classList.remove('selected'));
-        row.classList.add('selected');
+        if (document.activeElement === lastCell) {
+            e.preventDefault();
+            addRow();
+        }
     }
 });
-    // تنقل بين الخلايا بالأسهم وTab وEnter
+
+// تنقل بين الخلايا بالأسهم وTab وEnter
 document.addEventListener('keydown', function(e) {
     const activeCell = document.activeElement;
 
@@ -468,7 +544,6 @@ document.addEventListener('keydown', function(e) {
             if (nextCell) {
                 nextCell.focus();
             } else {
-                // لو وصلت آخر خلية بالصف، انتقل لأول خلية بالصف الجديد
                 const nextRow = table.rows[rowIndex + 1];
                 if (nextRow) {
                     nextRow.cells[0].focus();
@@ -523,16 +598,12 @@ function loadChart() {
         .catch(error => console.error('خطأ بتحميل بيانات المخطط:', error));
 }
 
-document.querySelectorAll('td').forEach(cell => {
-    cell.addEventListener('input', () => {
-        applyInstantColor(cell);
-    });
-});
-     // تلوين كل الخلايا عند بداية تحميل الصفحة
-    document.querySelectorAll('td').forEach(cell => {
-        colorCell(cell);
-        cell.addEventListener('input', () => colorCell(cell));  // تلوين مباشر عند تعديل الخلية
-    });
+window.onload = function() {
+    showSheet(0);
+    loadChart();
+};
+
 </script>
+
 </body>
 </html>

@@ -1,21 +1,130 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-    <meta charset="UTF-8">
-    <title>تقرير: {{ sheet_name }}</title>
-</head>
-<body>
-    <h1>تقرير: {{ sheet_name }}</h1>
-    <table border="1">
-        {% for row in data %}
-            <tr>
-                {% for cell in row %}
-                    <td>{{ cell }}</td>
-                {% endfor %}
-            </tr>
-        {% endfor %}
-    </table>
-    <br>
-    <a href="/">العودة إلى الصفحة الرئيسية</a>
-</body>
-</html>
+
+// دالة تحويل النص إلى تاريخ
+function parseDate(value) {
+    value = value.trim().replace(/-/g, "/");
+    const parts = value.split("/");
+    if (parts.length === 3) {
+        const year = parseInt(parts[0]);
+        const month = parseInt(parts[1]);
+        const day = parseInt(parts[2]);
+        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+            return new Date(year, month - 1, day);
+        }
+    }
+    return null;
+}
+
+// دالة التلوين الخاصة بـ "متابعة اوامر غيار 2025"
+function colorAmrTaghyirSheet(cell) {
+    const table = cell.closest('table');
+    const tableRows = table.querySelectorAll('tbody tr');
+    const TARGET_COLUMNS = [8, 9, 11, 13, 16, 18, 21];
+
+    tableRows.forEach(row => {
+        const columns = row.querySelectorAll('td');
+        TARGET_COLUMNS.forEach(index => {
+            if (index < columns.length) {
+                const thisCell = columns[index];
+                const prevCell = columns[index - 1];
+                if (thisCell && prevCell) {
+                    const currentDate = parseDate(thisCell.innerText);
+                    const previousDate = parseDate(prevCell.innerText);
+                    if (currentDate && previousDate) {
+                        if (currentDate > previousDate) {
+                            thisCell.style.backgroundColor = COLORS.orange;
+                        } else if (currentDate < previousDate) {
+                            thisCell.style.backgroundColor = COLORS.fireRed;
+                        } else {
+                            thisCell.style.backgroundColor = COLORS.blue;
+                        }
+                    }
+                }
+            }
+        });
+    });
+}
+
+// دالة التلوين الفوري حسب نوع الشيت
+function applyInstantColor(cell) {
+    const valueRaw = cell.innerText.trim();
+    const value = valueRaw.replace(/-/g, "/").replace(/\s+/g, "");
+    const row = cell.parentElement;
+    const table = row.closest('table');
+    const sheetName = table.closest('.sheet').querySelector('h2').textContent.trim();
+    const cellIndex = Array.from(row.children).indexOf(cell);
+    const headerCells = Array.from(table.querySelectorAll('thead th'));
+    const columnTitle = headerCells[cellIndex]?.textContent.trim() || '';
+    const today = new Date();
+
+    if (sheetName === "متابعة المشاريع وزارة التخطيط") {
+        const nextCell = cell.nextElementSibling;
+        const nextNextCell = nextCell ? nextCell.nextElementSibling : null;
+        const prevCell = cell.previousElementSibling;
+
+        if (valueRaw === "إعلان") {
+            cell.style.backgroundColor = COLORS.green;
+            if (nextCell) nextCell.style.backgroundColor = COLORS.white;
+            if (nextNextCell) nextNextCell.style.backgroundColor = COLORS.orange;
+        }
+        else if (valueRaw === "تم") {
+            cell.style.backgroundColor = COLORS.green;
+            if (nextCell) nextCell.style.backgroundColor = COLORS.orange;
+            if (nextNextCell) nextNextCell.style.backgroundColor = COLORS.darkGray;
+        }
+        else if (valueRaw === "") {
+            if (prevCell) {
+                const prevValue = prevCell.innerText.trim();
+                if (prevValue === "تم") {
+                    cell.style.backgroundColor = COLORS.orange;
+                    if (nextCell) nextCell.style.backgroundColor = COLORS.darkGray;
+                } else {
+                    cell.style.backgroundColor = COLORS.darkGray;
+                }
+            } else {
+                cell.style.backgroundColor = COLORS.darkGray;
+            }
+        }
+        else {
+            let isDate = false;
+            const parts = value.split("/");
+            if (parts.length === 3) {
+                const year = parseInt(parts[0]);
+                const month = parseInt(parts[1]);
+                const day = parseInt(parts[2]);
+                if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+                    const cellDate = new Date(year, month - 1, day);
+                    if (!isNaN(cellDate.getTime())) {
+                        isDate = true;
+                        if (cellDate <= today) {
+                            cell.style.backgroundColor = COLORS.green;
+                            if (nextCell) nextCell.style.backgroundColor = COLORS.orange;
+                            if (nextNextCell) nextNextCell.style.backgroundColor = COLORS.darkGray;
+                        } else {
+                            cell.style.backgroundColor = COLORS.red;
+                            if (nextCell) nextCell.style.backgroundColor = COLORS.darkGray;
+                        }
+                    }
+                }
+            }
+
+            if (!isDate) {
+                cell.style.backgroundColor = COLORS.yellow;
+                if (nextCell) nextCell.style.backgroundColor = COLORS.darkGray;
+            }
+        }
+    }
+    else if (sheetName === "متابعة اوامر غيار 2025") {
+        colorAmrTaghyirSheet(cell);
+    }
+}
+
+// تلوين كل الخلايا عند تحميل الصفحة
+window.addEventListener('load', function() {
+    const allTables = document.querySelectorAll('.sheet table');
+    allTables.forEach(table => {
+        const allCells = table.querySelectorAll('tbody td');
+        allCells.forEach(cell => {
+            applyInstantColor(cell);
+        });
+    });
+});
