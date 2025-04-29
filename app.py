@@ -63,7 +63,7 @@ def apply_styles(file_path):
 
     # ألوان الخلايا
     COLORS = {
-        'fireRed': 'FFC7CE',  # أحمر فاتح
+        'fireRed': 'B71C1C',  # أحمر دموي ناري
         'darkGreen': 'C6EFCE',  # أخضر فاتح
         'white': 'FFFFFF',  # أبيض
         'orange': 'FFEB9C',  # برتقالي فاتح
