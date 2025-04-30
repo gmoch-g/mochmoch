@@ -70,8 +70,6 @@ def save():
 
         wb.save(EXCEL_FILE_PATH)
 
-        apply_styles(EXCEL_FILE_PATH)
-
         wb.save(EXCEL_FILE_PATH)
 
         return jsonify({'status': 'success'})
