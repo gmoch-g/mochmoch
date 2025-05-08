@@ -1,179 +1,185 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-   <div style="text-align: right; line-height: 1.8; font-family: Arial, sans-serif; font-size: 14px; color: #333; margin: 10px 20px;">
-    <div style="font-weight: bold;">وزارة الإعمار والإسكان والبلديات والأشغال العامة</div>
-    <div style="font-weight: bold;">المديرية العامة للمجاري</div>
-    <div style="margin-top: 8px;">إعداد وتصميم: <span style="font-weight: bold;">ر. مهندسين رغد حميد</span></div>
-</div>
-
-
     <meta charset="UTF-8">
     <title>متابعة المشاريع</title>
-<style>
-body {
-    font-family: Arial;
-    background: white;
-    margin: 0;
-    padding: 0;
-}
+    <style>
+        body {
+            font-family: Arial;
+            background: white;
+            margin: 0;
+            padding: 0;
+        }
 
-table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-  table, th, td {
-    border: 1px solid black; /* حدود سوداء رفيعة */
-  }
-  th {
-    background-color: #d9eaff; /* أزرق فاتح للعناوين */
-    color: black;
-    padding: 8px;
-    text-align: center;
-    font-size: 14px;
-  }
-  td {
-    background-color: white; /* خلفية بيضاء لباقي الخلايا */
-    color: black;
-    padding: 8px;
-    text-align: center;
-    font-size: 14px;
-  }
-.content {
-    padding: 20px;
-}
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
 
-table {
-    width: 300%; /* أو auto حسب حاجتك */
-    border-collapse: collapse;
-    margin-top: 10px;
-}
+        table, th, td {
+            border: 1px solid black;
+        }
 
+        th {
+            background-color: #d9eaff;
+            color: black;
+            padding: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
 
-th, td {
-    padding: 8px;
-    border: 1px solid #ccc;
-    text-align: center;
-    font-size: 18px;
-    word-wrap: break-word; /* ✅ التفاف النص داخل الخلايا */
-    max-width: 300px; /* ✅ اختياري تحدد عرض الخلية */
-}
+        td {
+            background-color: white;
+            color: black;
+            padding: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
 
-th {
-    background-color: #2e7d32;
-    color: white;
-}
+        .content {
+            padding: 20px;
+        }
 
-tr:nth-child(even) {
-    background-color: #f1f8e9;
-}
+        table {
+            width: 300%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
 
-.sheet {
-    display: none;
-}
+        th, td {
+            padding: 8px;
+            border: 1px solid #ccc;
+            text-align: center;
+            font-size: 18px;
+            word-wrap: break-word;
+            max-width: 300px;
+        }
 
-.sheet.active {
-    display: block;
-}
+        th {
+            background-color: #2e7d32;
+            color: white;
+        }
 
-.save-button-container {
-    position: sticky;
-    top: 0;
-    background: #f8f9fa;
-    padding: 10px;
-    text-align: right;
-    border-bottom: 1px solid #ccc;
-    z-index: 1000;
-}
+        tr:nth-child(even) {
+            background-color: #f1f8e9;
+        }
 
-thead th {
-    position: sticky;
-    top: 0;
-    background-color: #2e7d32;
-    z-index: 2;
-}
-.buttons-container {
-    display: flex;
-    gap: 10px;
-    margin: 20px 0;
-}
+        .sheet {
+            display: none;
+        }
 
-.custom-button {
-    padding: 12px 24px;
-    font-size: 18px;
-    font-weight: bold;
-    color: white;
-    background: linear-gradient(135deg, #2196f3, #21cbf3);
-    border: none;
-    border-radius: 50px; /* شكل كبسولة */
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-}
+        .sheet.active {
+            display: block;
+        }
 
-.custom-button:hover {
-    background: linear-gradient(135deg, #1e88e5, #00acc1);
-    transform: translateY(-2px);
-}
+        .save-button-container {
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            padding: 10px;
+            text-align: right;
+            border-bottom: 1px solid #ccc;
+            z-index: 1000;
+        }
 
-.add-row-button {
-    background: linear-gradient(135deg, #4caf50, #81c784); /* لون ثاني لإضافة صف */
-}
+        thead th {
+            position: sticky;
+            top: 0;
+            background-color: #2e7d32;
+            z-index: 2;
+        }
 
-.add-row-button:hover {
-    background: linear-gradient(135deg, #388e3c, #66bb6a);
-}
-.search-input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 10px;
-    font-size: 18px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    box-sizing: border-box;
-}
-/* تكبير خاص بجدول "متابعة اوامر غيار 2025" */
+        .buttons-container {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .custom-button {
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #2196f3, #21cbf3);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .custom-button:hover {
+            background: linear-gradient(135deg, #1e88e5, #00acc1);
+            transform: translateY(-2px);
+        }
+
+        .add-row-button {
+            background: linear-gradient(135deg, #4caf50, #81c784);
+        }
+
+        .add-row-button:hover {
+            background: linear-gradient(135deg, #388e3c, #66bb6a);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
         .followup-big-table {
             font-size: 18px;
             table-layout: auto;
         }
-.tabs {
-    display: flex;
-    background: linear-gradient(to right, #f9d423, #ff4e50); /* تدرج جذاب */
-    padding: 8px;
-    overflow-x: auto;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* ظل خفيف */
-    border-bottom: 3px solid #ff4e50;
-}
-.tab {
-    padding: 12px 24px;
-    margin: 4px;
-    background: white;
-    color: #333;
-    font-weight: bold;
-    font-size: 18px;
-    border-radius: 30px; /* شكل كبسولة */
-    border: 2px solid #ff4e50;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-.tab:hover {
-    background: #ffe0b2;
-    color: #ff4e50;
-}
-.tab.active {
-    background: #ff4e50;
-    color: white;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* ظل لما تكون نشطة */
 
-}
+        .tabs {
+            display: flex;
+            background: linear-gradient(to right, #f9d423, #ff4e50);
+            padding: 8px;
+            overflow-x: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-bottom: 3px solid #ff4e50;
+        }
 
+        .tab {
+            padding: 12px 24px;
+            margin: 4px;
+            background: white;
+            color: #333;
+            font-weight: bold;
+            font-size: 18px;
+            border-radius: 30px;
+            border: 2px solid #ff4e50;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
 
-</style>
+        .tab:hover {
+            background: #ffe0b2;
+            color: #ff4e50;
+        }
+
+        .tab.active {
+            background: #ff4e50;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+    </style>
 </head>
 <body>
+
+    <!-- رأس الصفحة -->
+    <div style="text-align: right; line-height: 1.8; font-family: Arial, sans-serif; font-size: 14px; color: #333; margin: 10px 20px;">
+        <div style="font-weight: bold;">وزارة الإعمار والإسكان والبلديات والأشغال العامة</div>
+        <div style="font-weight: bold;">المديرية العامة للمجاري</div>
+        <div style="margin-top: 8px;">إعداد وتصميم: <span style="font-weight: bold;">ر. مهندسين رغد حميد</span></div>
+
+
 <div class="buttons-container">
     <button class="custom-button" onclick="saveChanges()">💾 حفظ التعديلات</button>
     <button class="custom-button add-row-button" onclick="addRow(this)">➕ إضافة صف</button>
@@ -245,10 +251,7 @@ function applyInstantColor(cell) {
     const headerCells = Array.from(table.querySelectorAll('thead th'));
     const columnTitle = headerCells[cellIndex]?.textContent.trim() || '';
     const today = new Date();
-
-    // ألوان حسب الخطة
-    const allowedColumnsFollowUp = [7, 9, 11, 13, 16, 18, 21];
-
+const allowedColumnsFollowUp = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34];
     // --- متابعة مشاريع قيد التنفيذ ---
     if (sheetName === 'متابعة مشاريع قيد التنفيذ') {
         if (cellIndex >= 9) {
@@ -306,33 +309,39 @@ function applyInstantColor(cell) {
             }
         }
     }
-    // --- متابعة أوامر غيار 2025 ---
-    else if (sheetName.includes('متابعة اوامر غيار 2025')) {
-        if (allowedColumnsFollowUp.includes(cellIndex)) {
-            const prevCell = cellIndex > 0 ? row.children[cellIndex - 1] : null;
-            const prevValue = prevCell?.innerText.trim() || '';
 
-            const enteredParts = value.split(/[-\/]/);
-            const prevParts = prevValue.split(/[-\/]/);
+else if (sheetName === 'متابعة اوامر غيار 2025') {
+    if (allowedColumnsFollowUp.includes(cellIndex)) {
+        const prevCell = row.children[cellIndex -1]; // الخلية المجاورة من جهة اليمين (بالعربية)
+        const prevValue = prevCell?.innerText.trim() || '';
+        const enteredParts = valueRaw.split(/[-\/]/);
+        const prevParts = prevValue.split(/[-\/]/);
+        let enteredDate = (enteredParts.length >= 3) ? new Date(+enteredParts[0], enteredParts[1] - 1, +enteredParts[2]) : null;
+        let prevDate = (prevParts.length >= 3) ? new Date(+prevParts[0], prevParts[1] - 1, +prevParts[2]) : null;
 
-            let enteredDate = (enteredParts.length >= 3) ? new Date(+enteredParts[0], enteredParts[1] - 1, +enteredParts[2]) : null;
-            let prevDate = (prevParts.length >= 3) ? new Date(+prevParts[0], prevParts[1] - 1, +prevParts[2]) : null;
+        const currentCell = row.children[cellIndex]; // نفس الخلية التي تم تعديلها
 
+        if (currentCell) {
             if (enteredDate instanceof Date && !isNaN(enteredDate.getTime())) {
                 if (prevDate instanceof Date && !isNaN(prevDate.getTime())) {
                     if (enteredDate > prevDate) {
-                        cell.style.backgroundColor = COLORS.orange; // أكبر من التاريخ السابق
+                        currentCell.style.backgroundColor = COLORS.orange;
                     } else if (enteredDate < prevDate) {
-                        cell.style.backgroundColor = COLORS.fireRed; // أصغر من التاريخ السابق
+                        currentCell.style.backgroundColor = COLORS.fireRed;
                     } else {
-                        cell.style.backgroundColor = COLORS.darkGreen; // يساوي التاريخ السابق
+                        currentCell.style.backgroundColor = COLORS.darkGreen;
                     }
+                } else {
+                    currentCell.style.backgroundColor = '';
                 }
+            } else {
+                currentCell.style.backgroundColor = '';
+
             }
         }
     }
 }
-
+ }
 function showSheet(index) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active'));
