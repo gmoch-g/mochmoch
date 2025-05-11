@@ -219,7 +219,6 @@
     {% endfor %}
 </div>
 <script>
-
 function cleanDate(cell) {
     const value = cell.innerText.trim();
     if (value) {
@@ -228,7 +227,12 @@ function cleanDate(cell) {
             const year = parts[0];
             const month = parts[1].padStart(2, '0');
             const day = parts[2].padStart(2, '0');
-            cell.innerText = `${year}-${month}-${day}`;
+
+            // التأكد من أن النص الجديد لا يتجاوز 10 أحرف (YYYY-MM-DD)
+            const formattedDate = `${year}-${month}-${day}`;
+            if (formattedDate.length <= 10) {
+                cell.innerText = formattedDate;
+            }
         }
     }
 }
@@ -336,7 +340,6 @@ else if (sheetName === 'متابعة اوامر غيار 2025') {
                 }
             } else {
                 currentCell.style.backgroundColor = '';
-
             }
         }
     }
@@ -516,38 +519,6 @@ document.addEventListener('keydown', function(e) {
         saveChanges();
     }
 });
-
-function loadChart() {
-    fetch('/chart-data')
-        .then(response => response.json())
-        .then(data => {
-            const ctx = document.getElementById('projectsChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: 'نسبة الإنجاز (%)',
-                        data: data.values,
-                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    indexAxis: 'y',
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            max: 100
-                        }
-                    }
-                }
-            });
-        })
-        .catch(error => console.error('خطأ بتحميل بيانات المخطط:', error));
-}
 
 document.querySelectorAll('td').forEach(cell => {
     cell.addEventListener('input', () => {
