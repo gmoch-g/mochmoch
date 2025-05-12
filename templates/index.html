@@ -316,35 +316,32 @@ const allowedColumnsFollowUp = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30
 
 else if (sheetName === 'متابعة اوامر غيار 2025') {
     if (allowedColumnsFollowUp.includes(cellIndex)) {
-        const prevCell = row.children[cellIndex -1]; // الخلية المجاورة من جهة اليمين (بالعربية)
-        const prevValue = prevCell?.innerText.trim() || '';
         const enteredParts = valueRaw.split(/[-\/]/);
-        const prevParts = prevValue.split(/[-\/]/);
-        let enteredDate = (enteredParts.length >= 3) ? new Date(+enteredParts[0], enteredParts[1] - 1, +enteredParts[2]) : null;
-        let prevDate = (prevParts.length >= 3) ? new Date(+prevParts[0], prevParts[1] - 1, +prevParts[2]) : null;
+        let enteredDate = (enteredParts.length >= 3)
+            ? new Date(+enteredParts[0], enteredParts[1] - 1, +enteredParts[2])
+            : null;
 
-        const currentCell = row.children[cellIndex]; // نفس الخلية التي تم تعديلها
+        const currentCell = row.children[cellIndex];
 
         if (currentCell) {
             if (enteredDate instanceof Date && !isNaN(enteredDate.getTime())) {
-                if (prevDate instanceof Date && !isNaN(prevDate.getTime())) {
-                    if (enteredDate > prevDate) {
-                        currentCell.style.backgroundColor = COLORS.orange;
-                    } else if (enteredDate < prevDate) {
-                        currentCell.style.backgroundColor = COLORS.fireRed;
-                    } else {
-                        currentCell.style.backgroundColor = COLORS.darkGreen;
-                    }
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // تصفير الوقت للمقارنة بدقة
+
+                if (enteredDate < today) {
+                    currentCell.style.backgroundColor = '#e74c3c'; // 🔴 أقدم من اليوم
+                } else if (enteredDate.getTime() === today.getTime()) {
+                    currentCell.style.backgroundColor = '#27ae60'; // 🟢 نفس اليوم
                 } else {
-                    currentCell.style.backgroundColor = '';
+                    currentCell.style.backgroundColor = '#3498db'; // 🔵 بعد اليوم
                 }
             } else {
-                currentCell.style.backgroundColor = '';
+                currentCell.style.backgroundColor = ''; // مسح التلوين إن لم يكن تاريخًا صالحًا
             }
         }
     }
 }
- }
+  }
 function showSheet(index) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active'));
